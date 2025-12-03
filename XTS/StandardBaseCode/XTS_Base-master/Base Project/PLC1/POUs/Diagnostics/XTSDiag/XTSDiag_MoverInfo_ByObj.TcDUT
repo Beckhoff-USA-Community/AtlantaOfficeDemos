@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <DUT Name="XTSDiag_MoverInfo_ByObj" Id="{72348a57-59cc-4f0f-b466-e8d2f4ea12b2}">
+    <Declaration><![CDATA[TYPE XTSDiag_MoverInfo_ByObj :
+STRUCT
+	FollowingError	: LREAL;
+	SetPosition		: LREAL;
+	SetVelocity		: REAL;
+	SetAcceleration	: REAL;
+	SetCurrent		: LREAL;
+	SetForce		: LREAL;
+	Error			: BOOL;
+	ErrorID			: UDINT;
+	Ready			: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

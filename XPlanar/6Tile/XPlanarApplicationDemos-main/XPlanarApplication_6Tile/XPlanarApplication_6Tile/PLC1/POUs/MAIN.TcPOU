@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <POU Name="MAIN" Id="{53f80725-e154-4e5a-96e6-b0c8fbf1d217}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	//Main machine module declaration
+	XPlanarModule : FB_XPlanarModule;
+
+	//Control Source for running machine
+	ControlSourceHMI : FB_ControlSource;
+	ControlSourcePB	 : FB_ControlSource;
+
+	//Local Vars
+	InitComplete : BOOL;
+	_DCLinkOK	: BOOL;
+
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CyclicLogic();
+
+// Cope Resetting Code
+IF XPlanarModule.InitComplete THEN
+	
+	CASE XPlanarModule.CurrentState OF
+		
+		// Aborting - wait for rising edge of DCLinkOK
+		ePMLState_aborted:
+
+			IF XPlanarModule.DC_Bus_OK AND NOT _DCLinkOK THEN
+				XPlanarModule.ChangeState(ePMLCommand_Clear);
+			END_IF
+
+		ePMLState_Stopped:
+			XPlanarModule.ChangeState(ePMLCommand_Reset);
+
+		ePMLState_Idle:
+			IF XPlanarModule._CommandedState = ePMLCommand_Clear THEN
+				XPlanarModule.ChangeState(ePMLCommand_Reset);
+			ELSIF XPlanarModule._CommandedState = ePMLCommand_Reset THEN
+				XPlanarModule.ChangeState(ePMLCommand_Start);
+			END_IF
+	
+	END_CASE
+
+	// Save Previous Values
+	_DCLinkOK	:= XPlanarModule.DC_Bus_OK;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="CyclicLogic" Id="{2e5361b9-6226-42d5-a916-4da7c200d76c}">
+      <Declaration><![CDATA[METHOD CyclicLogic
+VAR_INPUT
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT InitComplete THEN
+	InitComplete := Initialize();
+	RETURN;
+END_IF
+
+//Machine support HMI & Production Monitor
+ControlSourcePB.CyclicLogic();
+ControlSourceHMI.CyclicLogic();
+
+//Machine Cyclic Logic
+XPlanarModule.CyclicLogic();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Initialize" Id="{0d2644bd-d597-469b-b036-81ca046418f6}">
+      <Declaration><![CDATA[METHOD Initialize : BOOL]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Top level machine initialization should happen here, in the main initialization METHOD. Each subsequent "layer" OF modules will be named within their respective "parent" intialize METHOD
+IF NOT ControlSourceHMI.Registered THEN
+	XPlanarModule.RegisterExternalController(ControlSourceHMI);
+END_IF
+
+IF NOT ControlSourcePB.Registered THEN
+	XPlanarModule.RegisterExternalController(ControlSourcePB);
+END_IF
+
+ControlSourceHMI.CyclicLogic();
+ControlSourcePB.CyclicLogic();
+
+//ADSLOGSTR(ADSLOG_MSGTYPE_WARN, 'Lag Monitoring disabled', 'For simulation demo only',);
+Initialize := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="MAIN">
+      <LineId Id="2" Count="0" />
+      <LineId Id="4" Count="7" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="12" Count="16" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="32" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.CyclicLogic">
+      <LineId Id="21" Count="9" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.Initialize">
+      <LineId Id="20" Count="12" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

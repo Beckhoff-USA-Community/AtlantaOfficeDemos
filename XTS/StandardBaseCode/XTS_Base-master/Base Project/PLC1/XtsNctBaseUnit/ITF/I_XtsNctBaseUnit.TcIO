@@ -1,0 +1,290 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <Itf Name="I_XtsNctBaseUnit" Id="{2b310d87-b5c9-0572-3569-3110c4511371}">
+    <Declaration><![CDATA[INTERFACE I_XtsNctBaseUnit]]></Declaration>
+    <Folder Name="Methods" Id="{63d72e80-4ea2-009a-3541-66552460be54}">
+      <Folder Name="Adminstrative" Id="{9205234a-5316-0dca-0a23-68e3a1bab8df}" />
+      <Folder Name="Communication" Id="{45a9adb1-128d-0a6f-0bde-ffe00d1b4231}" />
+    </Folder>
+    <Folder Name="Properties" Id="{40dfb317-344c-0b4d-20fd-63c2ce39487c}">
+      <Folder Name="Administrative" Id="{4f73fc20-5c93-0217-05ff-f0d05fcbc58f}" />
+      <Folder Name="ProcessData" Id="{06b94ea2-390b-03da-0be2-7bd9a6699615}" />
+      <Folder Name="ProcessImage" Id="{46713149-e4cd-0871-0114-b2b46929c886}" />
+      <Folder Name="Registers" Id="{c1594288-4628-0bb2-27f5-268e0e0c1b08}" />
+    </Folder>
+    <Property Name="ActiveTime" Id="{71e6e6b6-4cfa-0c37-2665-24b2d4f6e385}" FolderPath="Properties\Administrative\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY ActiveTime : REAL]]></Declaration>
+      <Get Name="Get" Id="{fd6f318e-9647-0cfb-2b06-7c2ec8fe49ff}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="AnalogInput1" Id="{adc2595b-ce98-0239-1a79-d1ff88832e95}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY AnalogInput1 : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{59e41706-22dd-068d-0c15-318790bfff85}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="AnalogInput2" Id="{64e7a36d-8885-08fa-370b-9f047f45a15f}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY AnalogInput2 : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{43c0b538-1c91-0579-2991-7dbead668437}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="BIC" Id="{939e10f2-36f7-0421-355f-c518e6d6a2f8}" FolderPath="Properties\Registers\">
+      <Declaration><![CDATA[PROPERTY BIC : ARRAY[1..256] OF BYTE]]></Declaration>
+      <Get Name="Get" Id="{b7c5e17d-e9cb-0fea-0f5b-81597832d71d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{08f4b4ed-da11-02ea-0d43-33fcc20a37c1}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="ControlVoltage" Id="{dd61dbc8-706d-0d65-16d0-16d25d639d14}" FolderPath="Properties\Registers\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY ControlVoltage : UINT]]></Declaration>
+      <Get Name="Get" Id="{01050729-c3b9-0371-0238-d07078aa5955}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{a15526a9-be53-069c-19fa-222902eb1f5e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="DeviceName" Id="{73926f5c-717f-040c-0b53-0a39046aae6d}" FolderPath="Properties\Registers\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DeviceName : STRING(31)]]></Declaration>
+      <Get Name="Get" Id="{545dfc1d-2fb2-0ce6-2da5-36a6d90c3065}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{0a8f9bcc-d158-0f17-359b-fe2b575c8409}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="DigitalInput1" Id="{3390b9f3-5cee-0006-2c02-b82b947c5fdb}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalInput1 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{8dfe1a88-0707-0192-2346-08e62b75a65e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="DigitalInput2" Id="{1ee2d02e-8cf1-0eae-3a56-ebb02e9b148c}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalInput2 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{7ff759d5-d4b7-0464-1af5-6548a4d916f5}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="DigitalInput3" Id="{6f309c75-e863-063b-3a63-eaa666e80cbb}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalInput3 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{29f00595-abd2-09e7-2202-b852c88a56c4}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="DigitalInput4" Id="{2d35c20e-24e6-0396-0474-a30310b42469}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalInput4 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{61bfd6b2-9949-0570-2a62-fd020e2eb615}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="DigitalOutput1" Id="{94fc6155-cad9-019e-3d3a-d34938920530}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalOutput1 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{68fca6e9-36cf-08bd-1578-0c662148b4e9}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{abafc4f0-471d-0d8a-37ae-8fcdb726809c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="DigitalOutput2" Id="{34fc016d-ddf4-0b1b-134e-784fc5c26c47}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalOutput2 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{b2c796f1-8ab6-0bb5-1994-a5f045e32a42}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{13f87e64-ac85-05b7-1a42-9c4528cca52f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="DigitalOutput3" Id="{9e129d78-aa10-0a2c-0bc0-b3fc461bdd20}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalOutput3 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{d91165d2-2ec5-0342-1104-dcd6b5180e0a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{10f67b76-db64-0983-0cea-b3fe158ede37}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="DigitalOutput4" Id="{a1c5830d-d51d-08d9-2fe9-0fd6f1cae003}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY DigitalOutput4 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{f3ab0b38-f2f0-042b-2005-a588ce925f4b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{2d3faead-e594-0172-0b2e-046b787fecce}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="HardwareVersion" Id="{9eea95aa-4a18-05e4-1ab9-380bf78598e9}" FolderPath="Properties\Registers\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY HardwareVersion : STRING(3)]]></Declaration>
+      <Get Name="Get" Id="{7fc0792b-e2ec-0472-12a3-46df27b3e18b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{28655299-0017-0d1b-1ccb-8887303f60fa}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="Identity" Id="{60c4c51e-3aca-0b8c-0418-a83bd3bb6bf2}" FolderPath="Properties\Registers\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY Identity : REFERENCE TO ProductIdentity]]></Declaration>
+      <Get Name="Get" Id="{21f3663d-7085-0182-2f44-d79c8eb958e4}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{d530708d-3577-00cc-0b34-d205d2f30295}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Method Name="Initalize" Id="{ac939d7e-388d-0f75-2bce-48cf494eedb2}" FolderPath="Methods\Adminstrative\">
+      <Declaration><![CDATA[METHOD Initalize : REFERENCE TO ST_ReturnStructure
+
+VAR_INPUT
+	bExecute: BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Property Name="InputProcessData" Id="{ea514186-a31f-0586-2957-378f30a9838a}" FolderPath="Properties\ProcessData\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY InputProcessData : REFERENCE TO ST_NctProcessData]]></Declaration>
+      <Get Name="Get" Id="{b43059a2-430d-04ea-12f7-2cedecf652e7}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="IsInterfaceAssigned" Id="{6adcdacc-e473-01ca-3529-2326a002af16}" FolderPath="Properties\Administrative\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY IsInterfaceAssigned : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c9cb23f1-e348-0f4a-1f05-fc11b4e39503}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="MoverGuid" Id="{677a5f94-ce88-0061-3fd9-0705452d511f}" FolderPath="Properties\Registers\">
+      <Declaration><![CDATA[PROPERTY MoverGuid : GUID]]></Declaration>
+      <Get Name="Get" Id="{550eb63d-4ed0-04bc-2a7b-0f7031b97cc8}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{d0e36f74-f189-034a-2a28-ad7f6f8c9e4a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="MoverUsername" Id="{2f2b38db-c0fd-0aea-1aae-154c85925606}" FolderPath="Properties\Registers\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY MoverUsername : STRING(31)]]></Declaration>
+      <Get Name="Get" Id="{b7c3b576-16f1-017a-2065-3cb1fb1e0c07}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{a4dbef06-a3c1-0994-1a8f-53e8b045e452}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="NctBaseUnitInterface" Id="{350e3b2f-a26b-0c01-0c45-402c0a46f1dd}" FolderPath="Properties\Administrative\">
+      <Declaration><![CDATA[PROPERTY NctBaseUnitInterface : I_TcIoXtsNctBaseUnitInterface]]></Declaration>
+      <Get Name="Get" Id="{5a62bd65-7b16-0acb-1841-fb72ab5afa4a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="OutputProcessData" Id="{68b5b51f-4300-07e8-392a-21c8a56b3bfc}" FolderPath="Properties\ProcessData\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY OutputProcessData : REFERENCE TO ST_NctProcessData]]></Declaration>
+      <Get Name="Get" Id="{b10b8511-10b7-022a-3e20-13ba02471480}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{65a94411-a0fb-07be-0b52-66d0a4766baf}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="PwmChannel1" Id="{30ded0ac-cc1d-00ea-28cc-6f23182de97e}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY PwmChannel1 : LREAL]]></Declaration>
+      <Get Name="Get" Id="{32012a30-5559-0dfa-2266-2874aa2de1e7}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{89f1318c-175d-0016-192b-e802f332bc89}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="PwmChannel2" Id="{869eb77d-0535-04f3-2536-d0a85bd4795a}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY PwmChannel2 : LREAL]]></Declaration>
+      <Get Name="Get" Id="{5ad31de3-5cd6-0e0c-28fa-05a116fc94b0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{a481c708-c11e-0ef2-37a5-357eb312b458}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="PwmChannel3" Id="{1f00b17e-6715-0235-01f0-dbcfa3803208}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY PwmChannel3 : LREAL]]></Declaration>
+      <Get Name="Get" Id="{d402e35e-7db6-0da2-1707-80258b511640}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{ac36fa5a-2999-0172-240f-0daa3cfcb0db}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="PwmFrequency" Id="{4a603542-fec6-005b-1e16-989bf6084089}" FolderPath="Properties\ProcessImage\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY PwmFrequency : LREAL]]></Declaration>
+      <Get Name="Get" Id="{8dc85e96-8f4b-0d29-23a4-39535415458c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{1fc69d12-7416-0be3-30e4-49734ff65f7d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Method Name="ReadRegister" Id="{bea69afb-468e-0cdb-08ae-32fc9e78e5fa}" FolderPath="Methods\Communication\">
+      <Declaration><![CDATA[METHOD ReadRegister : REFERENCE TO ST_ReturnStructure
+
+VAR_INPUT
+	bExecute		: BOOL;
+	stRegisterType	: NctRegisterType;
+END_VAR]]></Declaration>
+    </Method>
+    <Property Name="Status" Id="{450b05c8-a1ba-070b-00f7-f15b1ec9a635}" FolderPath="Properties\Administrative\">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY Status : REFERENCE TO NctBaseUnitStatus]]></Declaration>
+      <Get Name="Get" Id="{bdbfefe4-1739-0b3b-015a-d84a5bedc31f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="UpdateProcessData" Id="{716f09e6-de9d-0823-2042-ba588278d67c}" FolderPath="Methods\Communication\">
+      <Declaration><![CDATA[METHOD UpdateProcessData : REFERENCE TO ST_ReturnStructure
+
+VAR_INPUT
+	bEnable	: BOOL;	//Enables the cylcilc communication
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="WriteRegister" Id="{fe33a921-a0a3-09f2-05b3-63b915a0687e}" FolderPath="Methods\Communication\">
+      <Declaration><![CDATA[METHOD WriteRegister : REFERENCE TO ST_ReturnStructure
+
+VAR_INPUT
+	bExecute		: BOOL;
+	stRegisterType	: NctRegisterType;
+END_VAR]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

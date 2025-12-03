@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_MoverApplication" Id="{c04d6286-3029-4c56-b1dc-fb0bc59440b4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MoverApplication IMPLEMENTS I_MoverApplication
+VAR
+	ipMoverStandard	: I_XPlanarMoverStandard;
+	fbMoverStandard	: FB_XPlanarMoverStandard;
+
+	
+	nMoverIndex		: INT;
+	
+	nTrackId		: UDINT;
+	
+	// customer Data
+	bIsLoaded		: BOOL;	
+		
+		
+	// customer templates
+	fbSwivelMovement 	: FB_SwivelMovement;
+	ipSwivelMovement	: I_SwivelMovement;	
+	
+	fbShakeMovement 	: FB_ShakeMovement;
+	ipShakeMovement		: I_ShakeMovement;		
+	
+	fbGCode			: FB_GCode;
+	ipGCode			: I_GCode;
+	
+	
+		
+END_VAR
+
+VAR_OUTPUT
+	VisuPos	: MoverVector;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Cycle" Id="{3cff7639-35c1-4bdb-9020-86adc6f8ac20}">
+      <Declaration><![CDATA[METHOD Cycle
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ipMoverStandard := fbMoverStandard;
+
+
+IF std <> 0 THEN
+	std.cycle();
+	VisuPos := std.P_ActPosition;
+END_IF
+
+
+
+// additional functionality
+ipSwivelMovement := fbSwivelMovement;
+fbSwivelMovement(ipMover := ipMoverStandard);
+fbSwivelMovement.Cycle();
+
+
+ipShakeMovement := fbShakeMovement;
+fbShakeMovement(ipMover := ipMoverStandard);
+fbShakeMovement.Cycle();
+
+ipGCode := fbGCode;
+fbGCode(ipMover := ipMoverStandard);
+fbGCode.Cycle();
+
+
+
+
+
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="GCode" Id="{d6ceba06-f2f9-44b5-9e9b-5229362f963b}">
+      <Declaration><![CDATA[PROPERTY GCode : I_GCode]]></Declaration>
+      <Get Name="Get" Id="{53cfb764-9642-455a-9b1a-e61988470247}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF ipGCode <> 0 THEN
+	GCode := ipGCode;	
+END_IF
+
+
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{01c10ac2-7699-494a-b7c9-da151e5a620a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ipGCode := GCode;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_nMoverIndex" Id="{24fd9882-3bd1-494e-af6d-7436ababb6c7}">
+      <Declaration><![CDATA[PROPERTY P_nMoverIndex : INT]]></Declaration>
+      <Get Name="Get" Id="{7e7ff66a-0a50-4673-a237-4c68a9caf0f1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_nMoverIndex := nMoverIndex;
+
+
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{8dc969a4-7930-4648-8576-11abf341d667}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[nMoverIndex := P_nMoverIndex;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_nTrackId" Id="{1adb6d69-ee83-4794-991d-ba156490540f}">
+      <Declaration><![CDATA[PROPERTY P_nTrackId : UDINT]]></Declaration>
+      <Get Name="Get" Id="{6474aff8-cc6e-4030-a00d-3795177ba84b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_nTrackId := nTrackId;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{afc56916-c8fa-48e5-b821-a8c829d72231}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[nTrackId := P_nTrackId;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Shake" Id="{fe7a1c72-c8ee-4fc3-93c8-86afb91fcc60}">
+      <Declaration><![CDATA[PROPERTY Shake : I_ShakeMovement]]></Declaration>
+      <Get Name="Get" Id="{bd0efa6c-6a08-4fa6-95ec-316dd8e03661}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF ipShakeMovement <> 0 THEN
+	Shake := ipShakeMovement;	
+END_IF
+
+
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{612209d5-e739-4406-9176-b00d4b63d651}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ipShakeMovement := Shake;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="std" Id="{87d8a23e-7c73-4ac0-b107-cdf4f71a1360}">
+      <Declaration><![CDATA[PROPERTY std : I_XPlanarMoverStandard]]></Declaration>
+      <Get Name="Get" Id="{7d6b3eb7-03c1-44d4-b5d7-de62390f59c9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF ipMoverStandard <> 0 THEN
+	std := ipMoverStandard;	
+END_IF
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{b6ec7cab-1d1c-4ee6-8861-a1dcde7e9843}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ipMoverStandard := std;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Swivel" Id="{15aaee38-ef1c-4b1e-a501-c916248227d1}">
+      <Declaration><![CDATA[PROPERTY Swivel : I_SwivelMovement]]></Declaration>
+      <Get Name="Get" Id="{734e2dc6-6f4e-4f12-af83-40aa87807527}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF ipSwivelMovement <> 0 THEN
+	Swivel := ipSwivelMovement;	
+END_IF
+
+
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{58838ad0-be68-4044-b5c5-ca0997df969b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ipSwivelMovement := Swivel;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+  </POU>
+</TcPlcObject>

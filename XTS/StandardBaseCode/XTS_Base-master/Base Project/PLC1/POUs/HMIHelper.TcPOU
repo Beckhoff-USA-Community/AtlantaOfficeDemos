@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <POU Name="HMIHelper" Id="{86407be7-6f6a-0ed9-2497-dafead09aa63}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM HMIHelper
+VAR
+	HMI_XTSMoverInfo	: ARRAY[1..10] OF HMI_XTSMoverInfo_typ;
+	i					: INT;
+	Init				: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT Init THEN
+	FOR i := 1 TO (SIZEOF(HMI_XTSMoverInfo) / SIZEOF(HMI_XTSMoverInfo[1])) DO
+		HMI_XTSMoverInfo[i].Index	:= i;
+	END_FOR
+	Init	:= TRUE;
+END_IF
+
+FOR i := 1 TO (SIZEOF(HMI_XTSMoverInfo) / SIZEOF(HMI_XTSMoverInfo[1])) DO
+	HMI_XTSMoverInfo[i].Ready		:= Main.XTS.Mover[i].Ready;
+	HMI_XTSMoverInfo[i].Position	:= Main.XTS.Mover[i].TrackInfo.TrackPosition;
+END_FOR
+]]></ST>
+    </Implementation>
+    <LineIds Name="HMIHelper">
+      <LineId Id="1" Count="10" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

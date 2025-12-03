@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="Pushbutton_Enum" Id="{fdf8b117-916e-439c-8a30-699e1501f821}">
+    <Declaration><![CDATA[{attribute 'to_string'}
+TYPE Pushbutton_Enum :
+(
+	PB_EStop	:= 0,
+	PB_Start	:= 1,
+	PB_Stop		:= 2,
+	PB_Reset	:= 3
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

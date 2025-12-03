@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <DUT Name="HMI_XTSMoverInfo_typ" Id="{cb43bc86-830d-0f13-1208-784b0a97a6e0}">
+    <Declaration><![CDATA[TYPE HMI_XTSMoverInfo_typ :
+STRUCT
+	Index		: UDINT;
+	Ready		: BOOL;
+	Position	: LREAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.10">
+  <GVL Name="GVL00_IO" Id="{4b62d156-c139-43a4-b6f4-34b55745f21d}">
+    <Declaration><![CDATA[(* GVL00_IO *)
+{attribute 'TcContextName' := 'PlcTask'}
+VAR_GLOBAL
+
+	(* EL1859 digital inputs and outputs *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS10						AT%I*	:BOOL;		(* Switch S10 - heating 1 on/off *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS11						AT%I*	:BOOL;		(* Switch S11 - heating 2 on/off *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS12						AT%I*	:BOOL;		(* Switch S12 - fan on/off *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS13						AT%I*	:BOOL;		(* Switch S13 - blinker 1 on/off *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS14						AT%I*	:BOOL;		(* Switch S14 - blinker 2 on/off *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS15						AT%I*	:BOOL;		(* Switch S15 - clock signal 500ms on/off*)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS16						AT%I*	:BOOL;		(* Switch S16 - clock signal 1s on/off*)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS17						AT%I*	:BOOL;		(* Switch S17 - clock signal 2s on/off*)
+	
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH10							AT%Q*	:BOOL;		(* LED H10 - heating 1 on *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH11							AT%Q*	:BOOL;		(* LED H11 - heating 2 on *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH12							AT%Q*	:BOOL;		(* LED H12 - fan 1 on *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH13							AT%Q*	:BOOL;		(* LED H13 - blinker 1 *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH14							AT%Q*	:BOOL;		(* LED H14 - blinker 2 *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH15							AT%Q*	:BOOL;		(* LED H15 - clock signal 500ms *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH16							AT%Q*	:BOOL;		(* LED H16 - clock signal 1s *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH17							AT%Q*	:BOOL;		(* LED H17 - clock signal 2s *)
+
+	(* EL1859 digital inputs/outputs *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS20						AT%I*	:BOOL;		(* Switch S20 - not in use *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS21						AT%I*	:BOOL;		(* Switch S21 - not in use *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS22						AT%I*	:BOOL;		(* Switch S22 - not in use *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS23						AT%I*	:BOOL;		(* Switch S23 - not in use *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS24						AT%I*	:BOOL;		(* Switch S24 - not in use *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS25						AT%I*	:BOOL;		(* Switch S25 - not in use *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS26						AT%I*	:BOOL;		(* Switch S26 - not in use *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bSwitchS27						AT%I*	:BOOL;		(* Switch S27 - not in use *)
+
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH20							AT%Q*	:BOOL;		(* LED H20 - temperature heat sink >23.75C° *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH21							AT%Q*	:BOOL;		(* LED H21 - temperature heat sink >27.50C° *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH22							AT%Q*	:BOOL;		(* LED H22 - temperature heat sink >31,25C° *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH23							AT%Q*	:BOOL;		(* LED H23 - temperature heat sink >35.00C° *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH24							AT%Q*	:BOOL;		(* LED H24 - temperature heat sink >38.75C° *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH25							AT%Q*	:BOOL;		(* LED H25 - temperature heat sink >42.50C° *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH26							AT%Q*	:BOOL;		(* LED H26 - temperature heat sink >46.25C° *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bLedH27							AT%Q*	:BOOL;		(* LED H27 - temperature heat sink >50.00C° *)
+
+	(* EL1004 digital inputs *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bHeating1Aktiv					AT%I*	:BOOL;		(* Heating 1 aktiv *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bHeating2Aktiv					AT%I*	:BOOL;		(* Heating 2 aktiv *)
+
+	(* EL2034 digital outputs *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bHeating1						AT%Q*	:BOOL;		(* Heating 1 *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bHeating2						AT%Q*	:BOOL;		(* Heating 2 *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bHeating1Led					AT%Q*	:BOOL;		(* Heating 1 Led - flash slow (temperature > 40.0) - flash fast (temperature > 45.0) *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bHeating2Led					AT%Q*	:BOOL;		(* Heating 2 Led - flash slow (temperature > 40.0) - flash fast (temperature > 45.0) *)
+
+	(* EL3255 0..10V analog inputs *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nAnalogInR10					AT%I*	:INT;		(* Analog input R10 - fan velocity *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nAnalogInR11					AT%I*	:INT;		(* Analog input R11 - blinker 1 flash speed *)
+	
+	(* EL5151 incremental encoder 24 increments/rotation * 4-fold evaluation -> 96  increments/rotation*)
+	{attribute 'OPC.UA.DA' := '1'}
+	nHandwheelCounter				AT%I*	:UINT;		(* handwheel counter *)
+	{attribute 'OPC.UA.DA' := '1'}
+	bHandwheelSwitchS18				AT%I*	:BOOL;		(* Switch S18 *)	
+	
+	(* EL3318 8-channel thermocouple inputs *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nTemperatureHeating1			AT%I*	:INT;		(* Temperature heating 1 *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nTemperatureHeating2			AT%I*	:INT;		(* Temperature heating 2 *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nTemperatureHeatSink			AT%I*	:INT;		(* Temperature heat sink *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nTemperatureCoverHeating		AT%I*	:INT;		(* Temperature cover heating *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nTemperatureAmbient				AT%I*	:INT;		(* Temperature ambient *)
+	
+	(* EL7332 2-channel DC motor output stage - fan *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nFanStatus						AT%I*	:UINT;		(* Fan status *)
+	{attribute 'OPC.UA.DA' := '1'}
+	nVeloFan						AT%Q*	:INT;		(* Fan velocity*)
+	{attribute 'OPC.UA.DA' := '1'}
+	nFanContol						AT%Q*	:UINT;		(* Fan control *)
+
+	(* EL3443 3-phase power measurement terminal *)
+	{attribute 'OPC.UA.DA' := '1'}
+	fVoltageHeating1				AT%I*	:REAL;		(* Voltage heating 1 (V)*)
+	{attribute 'OPC.UA.DA' := '1'}
+	fCurrentHeating1				AT%I*	:REAL;		(* Current heating 1 (A)*)
+	{attribute 'OPC.UA.DA' := '1'}
+	fVoltageHeating2				AT%I*	:REAL;		(* Voltage heating 1 (V)*)
+	{attribute 'OPC.UA.DA' := '1'}
+	fCurrentHeating2				AT%I*	:REAL;		(* Current heating 1 (A)*)
+	{attribute 'OPC.UA.DA' := '1'}
+	fVoltageFan						AT%I*	:REAL;		(* Voltage fan 1 (V)*)
+	{attribute 'OPC.UA.DA' := '1'}
+	fCurrentFan						AT%I*	:REAL;		(* Current fan 1 (power converter 1:32) (A*32) *)
+	
+END_VAR
+(* End *)]]></Declaration>
+  </GVL>
+</TcPlcObject>

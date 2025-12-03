@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <Task Name="PLC_Slow" Id="{4d9b2bc4-86c2-0a61-1c28-37a977e2edb1}">
+    <!--CycleTime in micro seconds.-->
+    <CycleTime>100000</CycleTime>
+    <Priority>20</Priority>
+    <PouCall>
+      <Name>HMIHelper</Name>
+    </PouCall>
+    <PouCall>
+      <Name>DiagnosticPRG</Name>
+    </PouCall>
+    <TaskFBGuid>{82b581e8-c271-4e76-822f-8a96cf5ea987}</TaskFBGuid>
+    <Fb_init>{227a3884-2ae0-4d04-a516-8cc140e505db}</Fb_init>
+    <Fb_exit>{cde6f56f-6852-413e-971f-3346bda44a45}</Fb_exit>
+    <CycleUpdate>{b7895e85-c6d5-4bb1-bdda-65a18b78d9a6}</CycleUpdate>
+    <PostCycleUpdate>{5bc75c8a-d1e6-4f9c-b2c9-8e81d6cdd191}</PostCycleUpdate>
+  </Task>
+</TcPlcObject>

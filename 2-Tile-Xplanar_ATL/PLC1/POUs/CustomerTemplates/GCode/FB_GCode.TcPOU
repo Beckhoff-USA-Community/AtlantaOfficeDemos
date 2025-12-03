@@ -1,0 +1,341 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_GCode" Id="{5c0b8c39-6d05-4dd4-bcfc-b055d4e4b4f8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_GCode IMPLEMENTS I_GCode
+
+VAR CONSTANT
+	cNumItpAxes	: INT := 6;
+END_VAR
+
+VAR
+
+// NC 
+
+	mcPower			: MC_Power;
+
+// G Code
+	stItpAxis 				: ARRAY [1..6] OF AXIS_REF;
+	stNciToPlc AT%I*		: NCTOPLC_NCICHANNEL_REF;
+	stPlcToNci AT%Q*		: PLCTONC_NCICHANNEL_REF;
+	fbCfgBuildExt3DGroup	: CfgBuildExt3DGroup;
+	fbReconfigGroup			: CfgReconfigGroup;
+	fbLoadProgram			: ItpLoadProgEx;
+	fbStartStopProgram		: ItpStartStop;
+	fbConfirmHandshake		: ItpConfirmHsk;
+	fbItpReset				: ItpResetEx2;
+
+	sGCodeFile				: STRING := 'C:\TwinCAT\Mc\Nci\EPBox.nc';
+	
+	fbGetBlockNum		: ItpGetBlockSearchData;
+// ==	
+	
+	nState			: INT := 10;
+	
+	bStartCam		: BOOL;
+	
+	nAxesCnt		: INT := 1;
+	ExtSetPos		: MoverVector;
+	ExtSetVelo		: MoverVector;
+	ExtSetAcc		: MoverVector;
+	stExtSetPosOptions	: MC_EXTERNAL_SET_POSITION_MODE;	
+
+	
+	
+// parameters
+
+	
+// internal
+	bExecute		: BOOL;
+	rtrigExecute 	: R_TRIG;
+	stReturn		: ST_CommandReturn;
+	
+	bAllIptAxesEnabled	: BOOL;
+	
+	
+END_VAR
+
+
+
+VAR_IN_OUT
+	ipMover			: I_XPlanarMoverStandard;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="internal" Id="{ae604e8c-9c6d-47d8-98b7-e90d569ecb39}" />
+    <Method Name="ccl_StartMovement" Id="{825d616a-ad23-4a23-ae5c-245e0ab90f48}" FolderPath="internal\">
+      <Declaration><![CDATA[{attribute 'hide'}
+METHOD PROTECTED ccl_StartMovement
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE nState OF
+
+0:
+ nstate := 10;
+
+10:
+	
+	stExtSetPosOptions := MC_EXTERNAL_SET_POSITION_MODE.Relative;
+	ipMover.EnableExternalSetpointGeneration('enable Ext Setpos',StExtSetPosOptions);	
+	nState := 11;
+11:
+	IF ipMover.P_EnableExternalSetpointGeneration.Done  THEN
+		nState := 14;
+	END_IF		
+
+14:
+
+bAllIptAxesEnabled := TRUE;
+FOR nAxesCnt := 1 TO cNumItpAxes DO
+			mcPower(
+				Axis:= stItpAxis[nAxesCnt], 
+				Enable:= TRUE, 
+				Enable_Positive:= TRUE, 
+				Enable_Negative:= TRUE );
+	
+	bAllIptAxesEnabled := NOT stItpAxis[nAxesCnt].Status.Disabled AND bAllIptAxesEnabled;
+END_FOR
+
+IF bAllIptAxesEnabled THEN
+	nstate := 15;
+END_IF
+
+
+
+
+
+
+
+	
+15:
+
+	Tc2_NCI.ItpSetOverridePercent(sPlcToNci:= stPlcToNci,fOverridePercent := 100);
+	nState := 16;		
+		
+	16: 
+		fbItpReset(sNciToPlc := stNciToPlc,
+					bExecute := TRUE);
+
+		IF NOT fbItpReset.bBusy THEN
+			nState := 21;
+
+			fbItpReset(sNciToPlc := stNciToPlc,
+						bExecute := FALSE);
+		END_IF	
+		
+	
+	21: 
+		fbCfgBuildExt3DGroup(
+			bExecute:= TRUE, 
+			nGroupId:= 6,
+			nXAxisId:= 6 , 
+			nYAxisId:= 7, 
+			nZAxisId:= 0,
+			bBusy=> , 
+			bErr=> , 
+			nErrId=> );
+
+ 
+			IF NOT fbCfgBuildExt3DGroup.bBusy AND NOT fbCfgBuildExt3DGroup.bErr THEN
+					fbCfgBuildExt3DGroup(
+									bExecute:= FALSE);
+				nState := 23;
+			ELSIF fbCfgBuildExt3DGroup.bErr THEN
+				nState := 999;
+			END_IF	
+
+	23: 
+		fbLoadProgram( 
+				sNciToPlc 	:= stNciToPlc,
+				bExecute 	:= TRUE,
+				sPrg		:= sGCodeFile,
+				nLength		:= LEN(fbLoadProgram.sPrg));
+		IF NOT fbLoadProgram.bBusy THEN
+			fbLoadProgram( 
+					sNciToPlc 	:= stNciToPlc,
+					bExecute 	:= FALSE);
+			nState := 24;
+		END_IF	
+		
+	24:	
+		fbStartStopProgram(nChnId := stNciToPlc.ChnId,
+							bStart := TRUE,
+							bStop := FALSE);
+		
+		IF NOT fbStartStopProgram.bBusy AND NOT fbStartStopProgram.bErr THEN
+			fbStartStopProgram.bStart := FALSE;
+			nState := 26;
+		ELSIF fbStartStopProgram.bErr THEN
+			fbStartStopProgram.bStart := FALSE;
+			nState := 999;	
+		END_IF
+
+
+		
+
+	26: // check handshake
+	
+
+		ExtSetPos.x := stItpAxis[1].NcToPlc.SetPos;
+		ExtSetPos.y := stItpAxis[2].NcToPlc.SetPos;
+		
+		ExtSetVelo.x := stItpAxis[1].NcToPlc.SetVelo;
+		ExtSetVelo.y := stItpAxis[2].NcToPlc.SetVelo;
+		
+		ExtSetAcc.x := stItpAxis[1].NcToPlc.SetAcc;
+		ExtSetAcc.y := stItpAxis[2].NcToPlc.SetAcc;
+		
+		ipMover.SetExternalSetpointValues(ExtSetPos,ExtSetVelo,ExtSetAcc);
+		
+			
+	
+	
+		IF ItpGetHskMFunc(sNciToPlc:=stNciToPlc) = 8 THEN
+			nState := 30;
+		END_IF
+
+	
+	
+	30: 	
+		fbConfirmHandshake( bExecute := TRUE,
+							sNciToPlc := stNciToPlc,
+							sPlcToNci := stPlcToNci);
+							
+		IF NOT fbConfirmHandshake.bBusy THEN
+			fbConfirmHandshake( bExecute := FALSE,
+								sNciToPlc := stNciToPlc,
+								sPlcToNci := stPlcToNci);
+			nState := 79;
+		END_IF
+
+
+79:
+
+		fbStartStopProgram(nChnId := stNciToPlc.ChnId,
+							bStart := FALSE,
+							bStop := TRUE);
+
+		
+		 IF NOT fbStartStopProgram.bBusy THEN
+				nState := 80;
+		END_IF
+
+80: fbReconfigGroup.bExecute := TRUE;
+	nState := 81;
+81:	
+	
+	IF NOT fbReconfigGroup.bBusy AND NOT fbReconfigGroup.bErr THEN
+		fbReconfigGroup.bExecute := FALSE;
+		nState := 90;
+	ELSIF fbReconfigGroup.bErr THEN
+		nState := 999;
+		fbReconfigGroup.bExecute := FALSE;
+	END_IF
+
+90:
+	ipMover.DisableExternalSetpointGeneration('');
+	nstate := 91;
+91:
+	IF ipMover.P_DisableExternalSetpointGeneration.Done THEN
+		nstate := 100;
+	END_IF
+
+
+	
+100:
+	stReturn.Done := TRUE;
+	bExecute := FALSE;
+	nState:= 0;	
+
+
+
+
+END_CASE
+
+
+CASE nstate OF
+	20..90:
+		
+	
+		ExtSetPos.x := stItpAxis[1] .NcToPlc.SetPos; 
+		ExtSetPos.y := stItpAxis[2].NcToPlc.SetPos; 
+		ExtSetPos.a := stItpAxis[4].NcToPlc.SetPos; 
+		ExtSetPos.b := stItpAxis[5].NcToPlc.SetPos;	
+	
+		ExtSetVelo.x := stItpAxis[1].NcToPlc.SetVelo; 
+		ExtSetVelo.y := stItpAxis[2].NcToPlc.SetVelo; 
+		ExtSetVelo.a := stItpAxis[4].NcToPlc.SetVelo; 
+		ExtSetVelo.b := stItpAxis[5].NcToPlc.SetVelo; 
+	
+		ExtSetAcc.x := stItpAxis[1].NcToPlc.SetAcc; 
+		ExtSetAcc.y := stItpAxis[2].NcToPlc.SetAcc; 
+		ExtSetAcc.a := stItpAxis[4].NcToPlc.SetAcc; 
+		ExtSetAcc.b := stItpAxis[5].NcToPlc.SetAcc; 		
+		
+	
+		ipMover.SetExternalSetpointValues(ExtSetPos,ExtSetVelo,ExtSetAcc);
+END_CASE
+
+
+
+
+IF fbLoadProgram.bErr
+	OR fbStartStopProgram.bErr
+	OR fbCfgBuildExt3DGroup.bErr
+	OR fbReconfigGroup.bErr
+	OR fbItpReset.bErr
+	OR fbConfirmHandshake.bErr THEN
+	stReturn.Error := TRUE;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Cycle" Id="{04adb110-b7ba-4c43-bfc0-0b715a32c09e}">
+      <Declaration><![CDATA[METHOD Cycle
+VAR
+	nCnt	 : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR nCnt := 1 TO cNumItpAxes DO
+	stItpAxis[nCnt].ReadStatus();
+END_FOR
+
+rtrigExecute(CLK:= bExecute, Q=> );
+IF rtrigExecute.Q THEN
+	MEMSET(destAddr:=ADR(stReturn) , fillByte:=0 , n:=SIZEOF(stReturn) );
+END_IF
+
+
+IF bExecute THEN
+	ccl_StartMovement();
+END_IF ]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Return" Id="{e2d1ade6-a458-4050-8faf-ddd8b48ea7f0}">
+      <Declaration><![CDATA[PROPERTY P_Return : REFERENCE to ST_CommandReturn]]></Declaration>
+      <Get Name="Get" Id="{82bce8a2-9743-42c4-becd-03b56050f0ea}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Return ReF= stReturn;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="StartMovement" Id="{1a691d6b-e804-4aef-9e86-c7f6dc8ef31f}">
+      <Declaration><![CDATA[METHOD StartMovement
+VAR_INPUT
+	sFilePath	: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+bExecute := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

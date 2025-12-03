@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.10">
+  <POU Name="MAIN" Id="{3bd54ebe-b811-463b-8d0c-b2defcbcc251}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+(*******************************************************************************************************
+Title				:	Main program 
+Description			:	Calling the created subroutines (Task 1ms)
+Version / Date		:	1.0.0 / 12.02.2018 / created program (Version progress see below)
+
+Supported hardware	: 	Demo-Rack mobile IoT
+
+Used Documentation	:	
+Documentation	
+Version/Date 		:	
+
+Required libraries 	: 	Please look in the "References" folder
+********************************************************************************************************)
+VAR
+	
+(* Cycle counter *)
+	nCycleCounter							:UDINT;
+
+(* act_SystemStart *)
+	eStateSystemStartSeq					:E_SystemStartupSequence;
+	eSystemStartSeqErrStep					:E_SystemStartupSequence := eSystemStart_NoError;
+	bSystemStartErr							:BOOL;
+	bSystemStartEnd							:BOOL;
+	fbTimerSystemStart						:TON;
+
+END_VAR
+(*******************************************************************************************************
+Version / Date / Description:
+1.0.0   / 12.02.2018 / created program
+********************************************************************************************************)
+(* End *)
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* MAIN - 1ms *)
+
+(* THIS CODE IS ONLY AN EXAMPLE - YOU HAVE TO CHECK APTITUDE FOR YOUR APPLICATION *)
+
+(* Cycle counter *)
+	nCycleCounter := nCycleCounter + 1;
+
+
+(* Startup detect *)
+	IF TwinCAT_SystemInfoVarList._TaskInfo[GETCURTASKINDEXEX()].FirstCycle
+	THEN
+		bFirstCycleDetected	:= TRUE;
+	END_IF
+
+
+(* Startup- or machine sequence *)
+	IF bFirstCycleDetected
+	THEN
+	(* Startup sequenz *)
+		act_SystemStart();
+
+		IF bSystemStartEnd
+		THEN
+			bFirstCycleDetected := FALSE;
+			bMachineSequenzAktiv := TRUE;
+		END_IF
+
+	ELSIF bMachineSequenzAktiv
+	THEN
+	(* Machine sequenz *)
+
+		(* Test clock generator *)
+			ClockGenerator();	
+			
+		(* Test blinker *)
+			Blinker();
+			
+		(* Test temperature control *)
+			TemperatureControl();
+
+		(* Test EtherCAT diacnostic *)
+			DiagnosticEtherCAT();
+
+	END_IF
+
+(* End *)]]></ST>
+    </Implementation>
+    <Action Name="act_SystemStart" Id="{cd31b0e0-0f3c-41c9-ad7b-988e941f8920}">
+      <Implementation>
+        <ST><![CDATA[(* Aktion system start *)
+
+	CASE eStateSystemStartSeq OF
+
+	
+		eSystemStart_Start			: 	(* Waiting for start *)
+		
+				eStateSystemStartSeq := eSystemStart_Init;
+
+				
+		eSystemStart_Init			:	(* Initialize *)
+
+				fbTimerSystemStart(IN := FALSE);
+				eStateSystemStartSeq := eSystemStart_LedOn;
+
+				
+		eSystemStart_LedOn			:	(* Sequence Leds on *)
+
+				fbTimerSystemStart(	
+					IN := TRUE,
+					PT := T#2250MS);
+
+				bLedH10	:=	fbTimerSystemStart.ET > T#250MS;
+				bLedH20 :=  bLedH10;
+				bLedH11	:=	fbTimerSystemStart.ET > T#500MS;
+				bLedH21 :=  bLedH11;
+				bLedH12	:=	fbTimerSystemStart.ET > T#750MS;
+				bLedH22 :=  bLedH12;
+				bLedH13	:=	fbTimerSystemStart.ET > T#1000MS;
+				bLedH23 :=  bLedH13;
+				bLedH14	:=	fbTimerSystemStart.ET > T#1250MS;
+				bLedH24 :=  bLedH14;
+				bLedH15	:=	fbTimerSystemStart.ET > T#1500MS;
+				bLedH25 :=  bLedH15;
+				bLedH16	:=	fbTimerSystemStart.ET > T#1750MS;
+				bLedH26 :=  bLedH16;
+				bLedH17	:=	fbTimerSystemStart.ET > T#2000MS;
+				bLedH27 :=  bLedH17;
+
+				IF fbTimerSystemStart.Q
+				THEN
+					fbTimerSystemStart(IN := FALSE);
+					eStateSystemStartSeq := eSystemStart_LedOff;
+				ELSIF FALSE
+				THEN
+					(* If error then notice the step *)
+					eSystemStartSeqErrStep := eStateSystemStartSeq;
+					eStateSystemStartSeq   := eSystemStart_ErrorStep;
+				END_IF
+
+				
+		eSystemStart_LedOff			:	(* Sequence Leds off *)
+
+				fbTimerSystemStart(	
+					IN := TRUE,
+					PT := T#2250MS);
+
+				bLedH10	:=	fbTimerSystemStart.ET < T#250MS;
+				bLedH20 :=  bLedH10;
+				bLedH11	:=	fbTimerSystemStart.ET < T#500MS;
+				bLedH21 :=  bLedH11;
+				bLedH12	:=	fbTimerSystemStart.ET < T#750MS;
+				bLedH22 :=  bLedH12;
+				bLedH13	:=	fbTimerSystemStart.ET < T#1000MS;
+				bLedH23 :=  bLedH13;
+				bLedH14	:=	fbTimerSystemStart.ET < T#1250MS;
+				bLedH24 :=  bLedH14;
+				bLedH15	:=	fbTimerSystemStart.ET < T#1500MS;
+				bLedH25 :=  bLedH15;
+				bLedH16	:=	fbTimerSystemStart.ET < T#1750MS;
+				bLedH26 :=  bLedH16;
+				bLedH17	:=	fbTimerSystemStart.ET < T#2000MS;
+				bLedH27 :=  bLedH17;
+									
+				IF fbTimerSystemStart.Q
+				THEN
+					eStateSystemStartSeq := eSystemStart_Done;
+				ELSIF FALSE
+				THEN
+					(* If error then notice the step *)
+					eSystemStartSeqErrStep := eStateSystemStartSeq;
+					eStateSystemStartSeq   := eSystemStart_ErrorStep;
+				END_IF
+
+				
+		eSystemStart_Done			:	(* System start done *)
+
+				bSystemStartEnd := TRUE;
+
+				
+		eSystemStart_ErrorStep		:	(* Error on system start *)
+
+				bSystemStartErr := TRUE;
+
+				IF FALSE
+				THEN
+					bSystemStartErr        := FALSE;
+					eSystemStartSeqErrStep := eSystemStart_NoError;
+					eStateSystemStartSeq   := eSystemStart_Start;
+				END_IF 
+
+	ELSE
+		
+		(* If not a valid step is active, then put on start *)
+		eSystemStartSeqErrStep := eSystemStart_NoError;
+		eStateSystemStartSeq   := eSystemStart_Start;
+	
+	END_CASE
+
+(* End *)]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="MAIN">
+      <LineId Id="201" Count="7" />
+      <LineId Id="213" Count="21" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="267" Count="1" />
+      <LineId Id="340" Count="2" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="269" Count="1" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="250" Count="4" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.act_SystemStart">
+      <LineId Id="2" Count="108" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

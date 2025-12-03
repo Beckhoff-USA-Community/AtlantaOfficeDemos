@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.13">
+  <POU Name="FB_XTSDiagnostic" Id="{b36458b1-c6d1-075a-3803-8bceb8451dd6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_XTSDiagnostic
+VAR_GENERIC CONSTANT
+	NUM_MOVERS				: USINT;
+	NUM_MODULES				: USINT;
+	NUM_INFEEDS				: USINT;
+END_VAR
+VAR_INPUT
+	ai_DCLinkVoltage AT %I* : ARRAY[0..1] OF UDINT;	// Map to EL9576 Brake Chopper Terminal - DC Link Voltage
+	PowerSupplyCount		: INT;					// Number of 48V 20amp power supplies on system
+	rXTS					: REFERENCE TO FB_XTS<10>;
+END_VAR
+VAR_OUTPUT
+	{attribute 'TcAnalytics'}
+	MoverInfo		AT %Q*		: XTSDiag_MoverInfo;
+	MoverInfoByObj			: ARRAY[1..NUM_MOVERS] OF XTSDiag_MoverInfo_ByObj;
+	{attribute 'TcAnalytics'}
+	ModuleInfo		AT %Q*		: XTSDiag_ModuleInfo;
+	ModuleInfoByObj			: ARRAY[1..NUM_MODULES] OF XTSDiag_ModuleInfo_ByObj;
+	{attribute 'TcAnalytics'}
+	InfeedSectionInfo	AT %Q*	: ARRAY[1..NUM_INFEEDS] OF XTSDiag_InfeedSectionInfo;
+	{attribute 'TcAnalytics'}
+	SystemInfo		AT %Q*		: XTSDiag_SystemInfo;
+END_VAR
+VAR
+	Init					: BOOL;
+	XPUId					: INT;
+	_ModuleInfeedMapping	: ARRAY[1..NUM_MODULES] OF XTSDiag_ModuleInfeedMapping_typ;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Cyclic" Id="{cb88c1e2-8a99-07f4-2f03-2986851ac3ad}">
+      <Declaration><![CDATA[METHOD Cyclic
+VAR_INPUT
+END_VAR
+VAR
+	i			: INT;
+	j			: INT;
+	Infeed		: INT;
+	Position	: INT;
+	ConfigCheck	: INT; // 0 is ok
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Do nothing if XTS environment not ready
+IF NOT rXTS.System.EnvironmentIsReady THEN
+	RETURN;
+
+// Write error message if configuration wrong
+ELSIF ConfigCheck > 0 THEN
+	IF ConfigCheck = 1 THEN
+		ConfigCheck	:= 100;
+		ADSLOGSTR( ADSLOG_MSGTYPE_ERROR, 'Invalid FB_XTSDiagnostic configuration - NumMovers > MaxNumMovers','');
+	ELSIF ConfigCheck = 2 THEN
+		ConfigCheck	:= 100;
+		ADSLOGSTR( ADSLOG_MSGTYPE_ERROR, 'Invalid FB_XTSDiagnostic configuration - NumModules > MaxNumModules','');
+	END_IF
+
+// Initialize FB
+ELSIF NOT Init THEN
+	IF GVL_XTSDiag.MAX_NUM_MOVERS < NUM_MOVERS		THEN	ConfigCheck := 1; RETURN; END_IF
+	IF GVL_XTSDiag.MAX_NUM_MODULES < NUM_MODULES	THEN	ConfigCheck := 2; RETURN; END_IF
+	SystemInfo.MoverCount					:= NUM_MOVERS;
+	SystemInfo.ModuleCount					:= NUM_MODULES;
+	SystemInfo.AvailableContinuousCurrent	:= PowerSupplyCount * 20.0;
+	XPUId									:= 1;//rXTS.System.XPUId;
+	FOR i := 1 TO NUM_MODULES DO
+		GetInfeedPositionByModule(i, Infeed => Infeed, Position => Position);
+		InfeedSectionInfo[Infeed].ModuleNumber[Position]	:= i;
+		InfeedSectionInfo[Infeed].ModuleCount				:= InfeedSectionInfo[Infeed].ModuleCount + 1;
+	END_FOR
+	Init	:= TRUE;
+END_IF
+
+// ********************		MOVERS		******************** //
+SystemInfo.TotalMoverCurrent		:= 0;
+FOR i := 1 TO NUM_MOVERS DO
+	MoverInfo.FollowingError[i]		:= rXTS.Mover[i].AxisReference.NcToPlc.PosDiff;
+	MoverInfo.SetPosition[i]		:= rXTS.Mover[i].TrackInfo.TrackPosition;
+	MoverInfo.SetVelocity[i]		:= rXTS.Mover[i].AxisReference.NcToPlc.SetVelo;
+	MoverInfo.SetAcceleration[i]	:= rXTS.Mover[i].AxisReference.NcToPlc.SetAcc;
+	MoverInfo.SetCurrent[i]			:= rXTS.System.Environment.XpuTcIo(XPUId).MoverTcIo(i).GetSetCurrent();
+	MoverInfo.setForce[i]			:= rXTS.System.Environment.XpuTcIo(XPUId).MoverTcIo(i).GetSetForce();
+	MoverInfo.Error[i]				:= rXTS.Mover[i].Error;
+	MoverInfo.ErrorID[i]			:= rXTS.Mover[i].ErrorID;
+	MoverInfo.Ready[i]				:= rXTS.Mover[i].Ready;
+
+	MoverInfoByObj[i].FollowingError	:= MoverInfo.FollowingError[i];
+	MoverInfoByObj[i].SetPosition		:= MoverInfo.SetPosition[i];
+	MoverInfoByObj[i].SetVelocity		:= MoverInfo.SetVelocity[i];
+	MoverInfoByObj[i].SetAcceleration	:= MoverInfo.SetAcceleration[i];
+	MoverInfoByObj[i].SetCurrent		:= MoverInfo.SetCurrent[i];
+	MoverInfoByObj[i].setForce			:= MoverInfo.setForce[i];
+	MoverInfoByObj[i].Error				:= MoverInfo.Error[i];
+	MoverInfoByObj[i].ErrorID			:= MoverInfo.ErrorID[i];
+	MoverInfoByObj[i].Ready				:= MoverInfo.Ready[i];
+
+	SystemInfo.TotalMoverCurrent	:= SystemInfo.TotalMoverCurrent + MoverInfo.SetCurrent[i];
+END_FOR
+
+// ********************		MOTOR MODULES		******************** //
+SystemInfo.TotalModuleCurrent					:= 0;
+FOR i := 1 TO NUM_MODULES DO
+	ModuleInfo.DCLinkVoltage[i]					:= rXTS.System.Environment.XpuTcIo(XPUId).PartTcIo(1).ModuleTcIo(i).GetDCLinkVoltage();
+	ModuleInfo.OverallCurrent[i]				:= rXTS.System.Environment.XpuTcIo(XPUId).PartTcIo(1).ModuleTcIo(i).GetOverallCurrent();
+	ModuleInfo.MaxOverallCurrentLast500ms[i]	:= rXTS.System.Environment.XpuTcIo(XPUId).PartTcIo(1).ModuleTcIo(i).GetMaxOverallCurrentLast500ms();
+	ModuleInfo.PCBTemperatures[i]				:= rXTS.System.Environment.XpuTcIo(XPUId).PartTcIo(1).ModuleTcIo(i).GetPCBTemperatures();
+	ModuleInfo.I2TTemperaturesPct[i]			:= rXTS.System.Environment.XpuTcIo(XPUId).PartTcIo(1).ModuleTcIo(i).GetI2TTemperatures();
+
+	ModuleInfoByObj[i].DCLinkVoltage				:= ModuleInfo.DCLinkVoltage[i];
+	ModuleInfoByObj[i].OverallCurrent				:= ModuleInfo.OverallCurrent[i];
+	ModuleInfoByObj[i].MaxOverallCurrentLast500ms	:= ModuleInfo.MaxOverallCurrentLast500ms[i];
+	ModuleInfoByObj[i].PCBTemperatures				:= ModuleInfo.PCBTemperatures[i];
+	ModuleInfoByObj[i].I2TTemperaturesPct			:= ModuleInfo.I2TTemperaturesPct[i];
+
+	SystemInfo.TotalModuleCurrent				:= SystemInfo.TotalModuleCurrent + ModuleInfo.OverallCurrent[i];
+END_FOR
+
+// ********************		INFEEDS		******************** //
+FOR i := 1 TO NUM_MODULES DO
+	GetInfeedPositionByModule(i, Infeed => Infeed, Position => Position);
+	InfeedSectionInfo[Infeed].DcLinkVoltage[Position]				:= ModuleInfo.DCLinkVoltage[i];
+	InfeedSectionInfo[Infeed].ModuleCurrentSummed[Position]			:= ModuleInfo.OverallCurrent[i];
+	InfeedSectionInfo[Infeed].MaxOverallCurrentLast500ms[Position]	:= ModuleInfo.MaxOverallCurrentLast500ms[i];
+END_FOR
+FOR i := 1 TO NUM_INFEEDS DO
+	InfeedSectionInfo[i].StartDcLinkVoltage							:= InfeedSectionInfo[i].DcLinkVoltage[1];
+	InfeedSectionInfo[i].EndDcLinkVoltage							:= InfeedSectionInfo[i].DcLinkVoltage[InfeedSectionInfo[i].ModuleCount];
+	InfeedSectionInfo[i].VoltageDropAcrossCable						:= (ai_DCLinkVoltage[0] / 1000.0) - InfeedSectionInfo[i].StartDcLinkVoltage;
+	InfeedSectionInfo[i].VoltageDropAcrossInfeed					:= InfeedSectionInfo[i].StartDcLinkVoltage - InfeedSectionInfo[i].EndDcLinkVoltage;
+	InfeedSectionInfo[i].TotalCurrent								:= InfeedSectionInfo[i].ModuleCurrentSummed[1];
+	FOR j := InfeedSectionInfo[i].ModuleCount TO 1 BY -1 DO
+		IF j <> InfeedSectionInfo[i].ModuleCount THEN				// Skip the first one since there's no downstream current to subtract
+			InfeedSectionInfo[i].ModuleCurrentIndivual[Position]	:= InfeedSectionInfo[i].ModuleCurrentSummed[Position] - InfeedSectionInfo[Infeed].ModuleCurrentSummed[Position + 1];
+		END_IF
+	END_FOR
+END_FOR
+
+// ********************		SYSTEM		******************** //
+SystemInfo.BusVoltage[0]	:= ai_DCLinkVoltage[0] / 1000.0;	// units in mV from card
+SystemInfo.BusVoltage[1]	:= ai_DCLinkVoltage[1] / 1000.0;
+IF SystemInfo.AvailableContinuousCurrent > 0 THEN				// Check for div by 0
+	SystemInfo.TotalCurrentUsagePct_MoverCalc	:= SystemInfo.TotalMoverCurrent / SystemInfo.AvailableContinuousCurrent;
+	SystemInfo.TotalCurrentUsagePct_ModuleCalc	:= SystemInfo.TotalModuleCurrent / SystemInfo.AvailableContinuousCurrent;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetInfeedPositionByModule" Id="{f0263155-dd55-0f27-0a26-99d4c61470b2}">
+      <Declaration><![CDATA[METHOD GetInfeedPositionByModule : BOOL
+VAR_INPUT
+	Module		: INT;
+END_VAR
+VAR_OUTPUT
+	Infeed		: INT;
+	Position	: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Infeed		:= _ModuleInfeedMapping[Module].Infeed;
+Position	:= _ModuleInfeedMapping[Module].Position;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetModuleByInfeedPosition" Id="{2af88955-1078-0514-1427-ecf932a5f97a}">
+      <Declaration><![CDATA[METHOD GetModuleByInfeedPosition : INT
+VAR_INPUT
+	Infeed		: INT;
+	Position	: INT;
+END_VAR
+VAR_OUTPUT
+	Module		: INT;
+END_VAR
+VAR
+	i			: INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR i := 1 TO NUM_MODULES DO
+	IF _ModuleInfeedMapping[Module].Infeed = Infeed AND _ModuleInfeedMapping[Module].Position = Position THEN
+		Module	:= i;
+		EXIT;
+	END_IF
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetModuleInfeedMapping" Id="{7c982e22-6c3d-0ddf-0e8f-08da42b5ceea}">
+      <Declaration><![CDATA[METHOD SetModuleInfeedMapping
+VAR_INPUT
+	Module		: INT;
+	Infeed		: INT;
+	Position	: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_ModuleInfeedMapping[Module].Infeed		:= Infeed;
+_ModuleInfeedMapping[Module].Position	:= Position;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

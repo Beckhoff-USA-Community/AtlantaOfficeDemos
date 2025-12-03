@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_MoverApplication" Id="{e063d166-58d5-4cf3-9667-4435b8f50264}">
+    <Declaration><![CDATA[INTERFACE I_MoverApplication
+]]></Declaration>
+    <Method Name="Cycle" Id="{c5bb2867-ba70-4404-bbd6-f781660c832f}">
+      <Declaration><![CDATA[METHOD Cycle]]></Declaration>
+    </Method>
+    <Property Name="P_nMoverIndex" Id="{46de7149-b83d-49e9-bb46-60e703c03568}">
+      <Declaration><![CDATA[PROPERTY P_nMoverIndex : INT]]></Declaration>
+      <Get Name="Get" Id="{b4101762-c762-4e64-8fba-4724bf4e30c9}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{aeaf9d9c-09c3-4e1b-8325-683cc883439a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_nTrackId" Id="{5e00ac0b-4280-4c12-b31b-0450a5fedbf9}">
+      <Declaration><![CDATA[PROPERTY P_nTrackId : UDINT]]></Declaration>
+      <Get Name="Get" Id="{eb990daf-3754-48fc-bb24-a27d6937a44f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{b4af4069-2855-49d6-83d9-8396e4a29bbe}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="std" Id="{86ac2f04-4369-4764-9195-431b2d989a7e}">
+      <Declaration><![CDATA[PROPERTY std : I_XPlanarMoverStandard]]></Declaration>
+      <Get Name="Get" Id="{d4957e6f-f43e-4a93-a11a-9872914a031d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{f0c5a095-ab67-4be2-adb5-00d65355a95d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

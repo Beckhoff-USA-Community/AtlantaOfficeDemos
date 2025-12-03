@@ -1,0 +1,406 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SwivelMovement" Id="{f014af9b-e6b1-484b-941d-2725e170a464}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SwivelMovement IMPLEMENTS I_SwivelMovement
+
+VAR_INPUT
+
+END_VAR
+
+VAR
+
+// NC 
+	stAxisMaster	: AXIS_REF;
+	stAxisZ			: AXIS_REF;
+	stAxisB			: AXIS_REF;	
+	stAxisX			: AXIS_REF;
+	stAxisY			: AXIS_REF;
+
+	mcPower			: MC_Power;
+	
+	mcMoveAbsZ		: MC_MoveAbsolute;
+	mcMoveAbsX		: MC_MoveAbsolute;
+	mcMoveAbsMaster	: MC_MoveAbsolute;
+	
+	mcSetPos		: MC_SetPosition;
+	
+	
+	McCamIn			: MC_Camin;	
+	McCamOut		: MC_CamOut;
+	
+	nState			: INT := -20;
+	
+	bStartCam		: BOOL;
+	
+	ExtSetPos		: MoverVector;
+	ExtSetVelo		: MoverVector;
+	ExtSetAcc		: MoverVector;
+	
+
+// parameters
+	fAmpZ			: LREAL := 0;
+	fAmpA			: LREAL := 2;	
+	nNumCycles		: UINT := 1;
+	nVeloMaster		: LREAL;
+	
+// internal
+	bExecute		: BOOL;
+	rtrigExecute 	: R_TRIG;
+	stReturn		: ST_CommandReturn;
+END_VAR
+
+
+
+VAR_IN_OUT
+	ipMover			: I_XPlanarMoverStandard;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="internal" Id="{5f988edf-ad9c-44e1-be38-91ffc9f5dcca}" />
+    <Method Name="ccl_StartMovement" Id="{0519a428-6ec1-4c6f-b299-13c6445230b3}" FolderPath="internal\">
+      <Declaration><![CDATA[{attribute 'hide'}
+METHOD PROTECTED ccl_StartMovement
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE nState OF
+
+-20:
+
+McCamOut(
+	Slave:= stAxisX, 
+	Execute:= TRUE);
+IF McCamOut.Done THEN
+	McCamOut(
+		Slave:= stAxisX, 
+		Execute:= FALSE);	
+	nState := nState+1;
+END_IF
+-19:
+McCamOut(
+	Slave:= stAxisY, 
+	Execute:= TRUE);
+IF McCamOut.Done THEN
+	McCamOut(
+		Slave:= stAxisY, 
+		Execute:= FALSE);	
+	nState := nState+1;
+END_IF
+
+-18:
+McCamOut(
+	Slave:= stAxisZ, 
+	Execute:= TRUE);
+IF McCamOut.Done THEN
+	McCamOut(
+		Slave:= stAxisZ, 
+		Execute:= FALSE);	
+	nState := nState+1;
+END_IF
+-17:
+McCamOut(
+	Slave:= stAxisB, 
+	Execute:= TRUE);
+IF McCamOut.Done THEN
+	McCamOut(
+		Slave:= stAxisB, 
+		Execute:= FALSE);	
+	nState := -15;
+END_IF
+
+-15:
+		nState := -10;
+
+-10:
+
+	mcPower(
+		Axis:= stAxisZ, 
+		Enable:= TRUE , 
+		Enable_Positive:= TRUE , 
+		Enable_Negative:= TRUE );
+	IF NOT stAxisZ.Status.Disabled THEN
+		nState := -9;
+	END_IF
+
+-9:
+	mcPower(
+		Axis:= stAxisMaster, 
+		Enable:= TRUE , 
+		Enable_Positive:= TRUE , 
+		Enable_Negative:= TRUE );
+	IF NOT stAxisMaster.Status.Disabled THEN
+		nState := -8;
+	END_IF
+
+
+-8:
+
+		nState := -7;
+	
+
+-7:
+
+		nState := -6;
+
+
+-6:
+
+		nState := 0;
+	
+
+
+0:
+
+		nState := 10;
+
+	
+10:
+
+	ipMover.EnableExternalSetpointGeneration('start ext. setpoint gen',MC_EXTERNAL_SET_POSITION_MODE.Relative);
+nState := 11;
+
+11:
+	IF ipMover.P_EnableExternalSetpointGeneration.Done THEN
+		nState := 30;
+	END_IF
+	
+
+
+	
+	
+30:
+	mcMoveAbsZ(
+		Axis:= stAxisZ, 
+		Execute:= TRUE, 
+		Position:= -fAmpZ , 
+		Velocity:= 50, 
+		Acceleration:= 500, 
+		Deceleration:= 500, 
+		Jerk:= 1000 );	
+
+	
+	IF mcMoveAbsZ.Done THEN
+
+		mcMoveAbsZ(
+			Axis:= stAxisZ, 
+			Execute:= FALSE);
+
+		nState := 40;				
+	END_IF
+		
+
+
+40:
+	McCamIn(
+		Master:=  stAxisMaster, 
+		Slave:= stAxisZ , 
+		Execute:= TRUE , 
+		MasterOffset:= , 
+		SlaveOffset:= , 
+		MasterScaling:= , 
+		SlaveScaling:= , 
+		StartMode:= , 
+		CamTableID:=1 , 
+		BufferMode:= , 
+		Options:= , 
+		InSync=> , 
+		Busy=> , 
+		Active=> , 
+		CommandAborted=> , 
+		Error=> , 
+		ErrorID=> );
+	IF McCamIn.InSync THEN
+		McCamIn(
+			Master:=  stAxisMaster, 
+			Slave:= stAxisZ , 
+			Execute:= FALSE);
+		nState := 50;
+	END_IF
+
+	
+50:	
+	mcMoveAbsMaster(
+		Axis:= stAxisMaster, 
+		Execute:= TRUE, 
+		Position:=  nNumCycles*360.0, 
+		Velocity:= nVeloMaster, 
+		Acceleration:= 1000, 
+		Deceleration:= 1000, 
+		Jerk:= 1000 );
+	IF mcMoveAbsMaster.Done THEN
+			mcMoveAbsMaster(
+				Axis:= stAxisMaster, 
+				Execute:= FALSE);
+			nState := nState +1;
+	END_IF
+	
+51:
+	McCamOut(
+		Slave:= stAxisZ, 
+		Execute:= TRUE);
+	IF McCamOut.Done THEN
+		McCamOut(
+			Slave:= stAxisZ, 
+			Execute:= FALSE);
+		nState := nState +1;
+	END_IF
+	
+52:
+
+		nState := nState +1;
+
+53:	
+
+		nState := nState +1;
+
+54:
+
+		nState := nState +1;
+	
+	
+55:
+	mcMoveAbsZ(
+		Axis:= stAxisZ, 
+		Execute:= TRUE, 
+		Position:= 0, 
+		Velocity:= 50, 
+		Acceleration:= 500, 
+		Deceleration:= 500, 
+		Jerk:= 1000 );	
+
+
+	IF mcMoveAbsZ.Done THEN
+
+		mcMoveAbsZ(
+			Axis:= stAxisZ, 
+			Execute:= FALSE);
+
+		nState := 58;				
+	END_IF
+
+
+58:
+	ipMover.DisableExternalSetpointGeneration('disable ext. setpoints');
+	nState := nState +1;
+59:
+	IF ipMover.P_DisableExternalSetpointGeneration.Done THEN
+		nState := nState +1;
+	END_IF
+	
+60:
+	mcSetPos(
+	Axis:= stAxisMaster , 
+	Execute:= TRUE,
+	Position := 0);
+	IF mcSetPos.Done THEN
+		mcSetPos(
+			Axis:= stAxisMaster , 
+			Execute:= FALSE);
+		nstate := 70;
+	END_IF
+	
+70:
+	bExecute := FALSE;
+	stReturn.Active := FALSE;
+	streturn.Done := TRUE;
+	nstate := 0;
+
+
+	
+	
+END_CASE
+
+
+CASE nstate OF
+	20..60:
+		
+	
+		ExtSetPos.x := stAxisX.NcToPlc.SetPos; 
+		ExtSetPos.y := stAxisY.NcToPlc.SetPos; 
+		ExtSetPos.z := stAxisZ.NcToPlc.SetPos; 
+		ExtSetPos.b := stAxisB.NcToPlc.SetPos;	
+	
+		ExtSetVelo.x := stAxisX.NcToPlc.SetVelo; 
+		ExtSetVelo.y := stAxisY.NcToPlc.SetVelo; 
+		ExtSetVelo.z := stAxisZ.NcToPlc.SetVelo; 
+		ExtSetVelo.b := stAxisB.NcToPlc.SetVelo; 
+	
+		ExtSetAcc.x := stAxisX.NcToPlc.SetAcc; 
+		ExtSetAcc.y := stAxisY.NcToPlc.SetAcc; 
+		ExtSetAcc.z := stAxisZ.NcToPlc.SetAcc; 
+		ExtSetAcc.b := stAxisB.NcToPlc.SetAcc; 		
+		
+	
+		ipMover.SetExternalSetpointValues(ExtSetPos,ExtSetVelo,ExtSetAcc);
+END_CASE
+
+
+IF mcMoveAbsMaster.Error THEN
+	mcMoveAbsMaster(Axis := stAxisMaster,Execute := FALSE);
+	nstate := -50;
+END_IF
+
+IF mcMoveAbsMaster.Error 
+	OR mcMoveAbsZ.error
+	OR mcMoveAbsX.error
+	OR mcPower.error
+	OR mcSetPos.error
+	OR McCamIn.error
+	OR McCamOut.error THEN
+	stReturn.Error := TRUE;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Cycle" Id="{8d4d61a4-dd02-49a1-98f0-4bceb5f23dbc}">
+      <Declaration><![CDATA[METHOD Cycle
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[stAxisMaster.ReadStatus();
+stAxisZ.ReadStatus();
+stAxisB.ReadStatus();
+stAxisX.ReadStatus();
+stAxisY.ReadStatus();
+
+rtrigExecute(CLK:= bExecute, Q=> );
+IF rtrigExecute.Q THEN
+	MEMSET(destAddr:=ADR(stReturn) , fillByte:=0 , n:=SIZEOF(stReturn) );
+END_IF
+
+
+IF bExecute THEN
+	ccl_StartMovement();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Return" Id="{fa27740b-2451-4527-afaa-b219df841286}">
+      <Declaration><![CDATA[PROPERTY P_Return : REFERENCE to ST_CommandReturn]]></Declaration>
+      <Get Name="Get" Id="{6ace171a-edb0-47fd-8004-4b84489274e8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Return ReF= stReturn;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="StartMovement" Id="{3af0375b-5f11-4885-9b1b-7265e28bd7ac}">
+      <Declaration><![CDATA[METHOD StartMovement
+VAR_INPUT
+	NumCycles		: UINT;
+	Velo			: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[nNumCycles := numCycles;
+nVeloMaster := Velo;
+
+bExecute := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

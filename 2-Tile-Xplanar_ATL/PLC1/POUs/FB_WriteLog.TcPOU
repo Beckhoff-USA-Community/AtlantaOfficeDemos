@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_WriteLog" Id="{eef59480-5ca1-480d-89f0-fd4ceb7f1002}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WriteLog
+VAR_INPUT
+	sPath	: STRING;
+	bErrorAcknowledge	: BOOL;
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	
+	nState			: INT;
+	hFile			: UINT;
+	fbFileOpen		: FB_FileOpen;	
+	fbFileWrite		: FB_FileWrite;
+	fbFileClose		: FB_FileClose;	
+	sWriteString	: STRING;
+	fbFilePuts		: FB_FilePuts;
+	
+	sWriteLogArray 	: STRING;
+	fbGetTime		: NT_GetTime;
+	tTime			: TIME;
+	nForCounter		: INT;
+	stTimeZoneInfo	:  TC2_UTILITIES.ST_TimeZoneInformation;
+	fbGetTimeZoneInformation: FB_GetTimeZoneInformation;
+	
+
+END_VAR
+VAR CONSTANT
+	nBufferSize : INT := 100;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[	
+CASE nState OF
+	-1:
+		
+		IF bErrorAcknowledge THEN
+			fbFileOpen(		bExecute	:= FALSE);
+			bErrorAcknowledge := FALSE;
+			nState := 0;
+		END_IF
+
+
+
+	0:	fbGetTimeZoneInformation(	sNetID 		:= '',
+									bExecute 	:= TRUE,
+									tzInfo		=> stTimeZoneInfo); 
+		IF NOT fbGetTimeZoneInformation.bBusy THEN
+			fbGetTimeZoneInformation(	sNetID 		:= '',
+										bExecute 	:= FALSE);
+			nState := 1;							
+		END_IF							
+
+	 	
+	1:
+			IF sWriteLogArray <> '' THEN
+				
+				sWriteString := sWriteLogArray;			
+				FOR nForCounter:= 0 TO nBufferSize-1 DO
+					sWriteLogArray[nForCounter]:= sWriteLogArray[nForCounter+1]; 	
+				END_FOR
+				nState := 5;
+			END_IF
+	
+	5: fbFileOpen(
+			sNetId		:='' , 
+			sPathName	:=sPath , 
+			nMode		:= FOPEN_MODEAPPEND, 
+			ePath		:= PATH_GENERIC , 
+			bExecute	:= TRUE, 
+			tTimeout	:= , 
+			bBusy		=> , 
+			bError		=> , 
+			nErrId		=> , 
+			hFile		=>	hFile );
+	
+		IF NOT fbFileOpen.bBusy AND (fbFileOpen.hFile <> 0) THEN
+			fbFileOpen(
+			sNetId		:='' , 
+			sPathName	:=sPath , 
+			nMode		:= FOPEN_MODEAPPEND, 
+			ePath		:= PATH_GENERIC , 
+			bExecute	:= FALSE);
+			nState := 10;
+		ELSIF fbFileOpen.bError THEN
+			nState := -1;
+		END_IF 	
+		
+	10: 
+	sWriteString := CONCAT(sWriteString,'$N');
+		fbFilePuts(
+			sNetId:='' , 
+			hFile:=hFile , 
+			sLine:=sWriteString , 
+			bExecute:=TRUE , 
+			tTimeout:= , 
+			bBusy=> , 
+			bError=> , 
+			nErrId=> );
+			
+		IF NOT fbFilePuts.bBusy THEN
+		
+			fbFilePuts(
+				sNetId:='' , 
+				hFile:=hFile , 
+				sLine:=sWriteString , 
+				bExecute:=FALSE); 
+			
+			nState := 30;
+		END_IF
+		
+	(*10: fbFileWrite(
+			sNetId		:='' , 
+			hFile		:= hFile , 
+			pWriteBuff	:= ADR(sWriteString), 
+			cbWriteLen	:= SIZEOF(sWriteString), 
+			bExecute	:= TRUE, 
+			tTimeout	:= , 
+			bBusy		=> , 
+			bError		=> , 
+			nErrId		=> , 
+			cbWrite		=> );
+		
+		IF NOT fbFileWrite.bBusy AND (fbFileWrite.cbWrite <> 0) THEN
+			nState := 30;
+			fbFileWrite(
+			sNetId		:='' , 
+			hFile		:= hFile , 
+			bExecute	:= FALSE); 
+		END_IF
+		*)
+	30: fbFileClose(
+			sNetId:='' , 
+			hFile:= hFile, 
+			bExecute:= TRUE, 
+			tTimeout:= , 
+			bBusy=> , 
+			bError=> , 
+			nErrId=> );
+			
+		IF NOT fbFileClose.bBusy THEN
+			 fbFileClose(
+				sNetId:='' , 
+				hFile:= hFile, 
+				bExecute:= FALSE, 
+				tTimeout:= , 
+				bBusy=> , 
+				bError=> , 
+				nErrId=> );
+				
+				
+				sWriteLogArray := '';
+			nState := 0;
+		END_IF
+
+	
+		
+		
+
+END_CASE]]></ST>
+    </Implementation>
+    <Method Name="M_AddLogg" Id="{e39a03b2-11d3-4323-ad36-5eb4fb7317a2}">
+      <Declaration><![CDATA[METHOD M_AddLogg
+VAR_INPUT
+	sParam : STRING;
+END_VAR
+
+VAR 
+	lDCTime : ULINT;
+	fbTimeConvert : FB_FileTimeToTzSpecificLocalTime; 
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+	IF sWriteLogArray = '' THEN
+		
+		lDCTime := F_GetActualDcTime64();
+		fbTimeConvert(in:= DCTIME64_TO_FILETIME(lDcTime),tzInfo := stTimeZoneInfo);	
+		
+		sWriteLogArray := CONCAT(DCTIME64_TO_STRING(FILETIME_TO_DCTIME64(fbTimeConvert.out)),': ');
+		sWriteLogArray := CONCAT(sWriteLogArray,sParam);
+	END_IF
+
+
+
+
+
+ 
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

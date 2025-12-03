@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_GCode" Id="{d5a3f934-6338-4630-8d61-d9069679b4c0}">
+    <Declaration><![CDATA[INTERFACE I_GCode
+]]></Declaration>
+    <Property Name="P_Return" Id="{178a2d40-d450-4d2a-876f-2a1956770d9b}">
+      <Declaration><![CDATA[PROPERTY P_Return : REFERENCE to ST_CommandReturn]]></Declaration>
+      <Get Name="Get" Id="{ddfd7fe4-419d-4342-a773-c7e770e400bd}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="StartMovement" Id="{18ca137f-abc1-4d79-84fb-19ec6961689a}">
+      <Declaration><![CDATA[METHOD StartMovement
+VAR_INPUT
+	sFilePath	: STRING;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

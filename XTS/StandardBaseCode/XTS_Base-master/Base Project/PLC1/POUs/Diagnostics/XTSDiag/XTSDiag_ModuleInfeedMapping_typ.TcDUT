@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <DUT Name="XTSDiag_ModuleInfeedMapping_typ" Id="{e89174bf-e0c3-0b0e-113d-82f7971572e1}">
+    <Declaration><![CDATA[TYPE XTSDiag_ModuleInfeedMapping_typ :
+STRUCT
+	Infeed		: INT;
+	Position	: INT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

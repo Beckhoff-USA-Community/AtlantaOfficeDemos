@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="GeneralPlc" Id="{40442ba5-5468-42d6-b755-fa74013c25b0}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM GeneralPlc
+VAR
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* General *)
+
+(* Led on/off *)
+
+	bLedPF14 := bSwitchSF14;
+	
+	bLedPF15 := bSwitchSF15;
+	
+	bLedPF22 := bSwitchSF22;
+	
+	bLedPF25 := bSwitchSF25;
+
+(* End *)]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

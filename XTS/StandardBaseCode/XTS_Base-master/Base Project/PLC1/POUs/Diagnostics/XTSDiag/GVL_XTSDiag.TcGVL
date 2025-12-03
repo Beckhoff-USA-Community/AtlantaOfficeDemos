@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <GVL Name="GVL_XTSDiag" Id="{0d8bc290-2fab-0250-224b-d44327225b20}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL CONSTANT
+	MAX_NUM_MOVERS	: UDINT	:= 10;
+	MAX_NUM_MODULES	: UDINT	:= 12;
+	MAX_NUM_INFEEDS	: UDINT	:= 2;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

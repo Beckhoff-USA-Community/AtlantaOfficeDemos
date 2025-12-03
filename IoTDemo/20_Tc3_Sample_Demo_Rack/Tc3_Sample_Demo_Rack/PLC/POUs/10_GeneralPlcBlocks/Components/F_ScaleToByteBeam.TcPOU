@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="F_ScaleToByteBeam" Id="{a3bcd930-c52d-4ba1-a480-abe896caa435}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_ScaleToByteBeam : Byte
+VAR_INPUT
+	
+	fActValue								:LREAL;
+	fMaxValue								:LREAL;
+	
+END_VAR
+VAR
+	
+	nValueBeam								:BYTE;
+	
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Scale to byte beam *)
+
+	nValueBeam := TO_BYTE(TRUNC(F_Scaling(nAnalogIn:=TO_INT(ABS(fActValue)), fNumerator:=8.0, fDenominator:=fMaxValue )));
+	
+	CASE nValueBeam OF
+		0	:	F_ScaleToByteBeam := 2#0;
+		1	:	F_ScaleToByteBeam := 2#1;
+		2	:	F_ScaleToByteBeam := 2#11;
+		3	:	F_ScaleToByteBeam := 2#111;
+		4	:	F_ScaleToByteBeam := 2#1111;
+		5	:	F_ScaleToByteBeam := 2#11111;
+		6	:	F_ScaleToByteBeam := 2#111111;
+		7	:	F_ScaleToByteBeam := 2#1111111;
+		8	:	F_ScaleToByteBeam := 2#11111111;
+	END_CASE
+	
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="F_ScaleToByteBeam">
+      <LineId Id="8" Count="0" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="9" Count="10" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

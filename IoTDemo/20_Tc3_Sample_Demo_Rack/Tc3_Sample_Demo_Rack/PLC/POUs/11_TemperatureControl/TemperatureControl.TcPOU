@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.10">
+  <POU Name="TemperatureControl" Id="{10a898a8-5cf7-4ae5-b238-aaff5da02d50}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM TemperatureControl
+VAR
+
+	(* Temperatures *)
+	fTemperatureCHeating1					:REAL;		(* Temperature heating 1 (C°)*)
+	fTemperatureCHeating2					:REAL;		(* Temperature heating 2 (C°)*)
+	fTemperatureCHeatSink					:REAL;		(* Temperature heat sink (C°)*)
+	nTemperatureHeatSinkLedArray			:BYTE;		(* Temperature heat sink - 8 Led array *)
+	fTemperatureCCoverHeating				:REAL;		(* Temperature cover heating (C°)*)
+	fTemperatureCAmbient					:REAL;		(* Temperature ambient (C°)*)
+
+	(* Fan *)
+	fCurrentFanA							:REAL;		(* Current fan 1 (A)*)	
+	fVeloFanProcent							:LREAL;		(* Fan velocity (%)*)
+	
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Temperature control *)
+ 
+
+(* Scaling temperature variables *)
+	fTemperatureCHeating1 	     := TO_REAL(nTemperatureHeating1) / 10.0;			
+	fTemperatureCHeating2 	     := TO_REAL(nTemperatureHeating2) / 10.0;
+
+	fTemperatureCHeatSink 	  	 := TO_REAL(nTemperatureHeatSink) / 10.0;
+	nTemperatureHeatSinkLedArray :=	F_ScaleToByteBeam(fActValue:= fTemperatureCHeatSink - 20.0 , fMaxValue:= 30.0);
+	bLedH20 := nTemperatureHeatSinkLedArray.0;	(* >23.75C° -> Led on *) 
+	bLedH21 := nTemperatureHeatSinkLedArray.1;	(* >27.50C° -> Led on *)
+	bLedH22 := nTemperatureHeatSinkLedArray.2;	(* >31,25C° -> Led on *)
+	bLedH23 := nTemperatureHeatSinkLedArray.3;	(* >35.00C° -> Led on *)
+	bLedH24 := nTemperatureHeatSinkLedArray.4;	(* >38.75C° -> Led on *)
+	bLedH25 := nTemperatureHeatSinkLedArray.5;	(* >42.50C° -> Led on *)
+	bLedH26 := nTemperatureHeatSinkLedArray.6;	(* >46.25C° -> Led on *)
+	bLedH27 := nTemperatureHeatSinkLedArray.7;	(* >50.00C° -> Led on *)
+
+	fTemperatureCCoverHeating    := TO_REAL(nTemperatureCoverHeating) / 10.0;
+
+	fTemperatureCAmbient 	     := TO_REAL(nTemperatureAmbient) / 10.0;
+
+	
+(* Heating 1 *)
+	bHeating1 := bSwitchS10 
+					AND NOT (fTemperatureCHeating1 > 48.0)					(* >48.0C° -> switch off *)
+						AND NOT fbDiagnosticEtherCAT.nFrmXWcState[0].1		(* 1 -> Terminals not in communication -> switch off *)
+							AND NOT fbDiagnosticEtherCAT.nFrmXWcState[0].2;
+
+	bLedH10 	 := bHeating1Aktiv;
+	
+	IF (fTemperatureCHeating1 > 45.0) 
+	THEN
+		bHeating1Led := bClock500ms;
+	ELSIF (fTemperatureCHeating1 > 40.0) 
+	THEN
+		bHeating1Led := bClock2s;
+	ELSIF bHeating1Aktiv 
+	THEN
+		bHeating1Led := TRUE;
+	ELSE
+		bHeating1Led := FALSE;
+	END_IF
+
+	
+(* Heating 2 *)
+	bHeating2 := bSwitchS11 
+					AND NOT (fTemperatureCHeating2 > 48.0)					(* >48.0C° -> switch off *)
+						AND NOT fbDiagnosticEtherCAT.nFrmXWcState[0].1		(* 1 -> Terminals not in communication -> switch off *)
+							AND NOT fbDiagnosticEtherCAT.nFrmXWcState[0].2;
+
+	bLedH11 := bHeating2Aktiv;
+	
+	IF (fTemperatureCHeating2 > 45.0) 
+	THEN
+		bHeating2Led := bClock500ms;
+	ELSIF (fTemperatureCHeating2 > 40.0) 
+	THEN
+		bHeating2Led := bClock2s;
+	ELSIF bHeating2Aktiv 
+	THEN
+		bHeating2Led := TRUE;
+	ELSE
+		bHeating2Led := FALSE;
+	END_IF
+
+
+(* Fan control *)
+	(* Enable fan *)
+	nFanContol.0 := bSwitchS12;
+
+	(* Fan ready *)
+	bLedH12 	 := nFanStatus.1;
+
+	(* Fan velocity *)	
+	nVeloFan 		:= TO_INT(F_Scaling(nAnalogInR10, 19000.0, 32650.0)) + 1000;
+	fVeloFanProcent := F_Scaling(nAnalogInR10, 90.0, 32650.0) + 10.0;
+
+	(* Fan actual current (A)*)
+	fCurrentFanA	:= fCurrentFan * 32.0;
+	
+	
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="TemperatureControl">
+      <LineId Id="15" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="106" Count="1" />
+      <LineId Id="137" Count="1" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="198" Count="3" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="203" Count="3" />
+      <LineId Id="208" Count="0" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="209" Count="0" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="175" Count="2" />
+      <LineId Id="19" Count="14" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="178" Count="1" />
+      <LineId Id="39" Count="17" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="60" Count="2" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="161" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

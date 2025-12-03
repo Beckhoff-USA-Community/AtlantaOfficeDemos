@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_Pushbutton" Id="{00bb2de2-ceb9-4822-8950-db2f92e4a8fc}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Pushbutton
+VAR_INPUT
+	Pressed		AT %I*	: BOOL;
+	rTON_Flash	: REFERENCE TO TON;
+END_VAR
+VAR_OUTPUT
+	LED_Red		AT %Q*	: BOOL;
+	LED_Green	AT %Q*	: BOOL;
+	LED_Blue	AT %Q*	: BOOL;
+END_VAR
+VAR
+	Mode		: INT;	// 0 : OFF, 1: ON, 2: FLASH
+	_LED_Color	: LED_Color_Enum;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE Mode OF
+	0:	// OFF
+		LED_Red		:= FALSE;
+    	LED_Green	:= FALSE;
+    	LED_Blue	:= FALSE;
+
+	1,2:	// ON or Flash
+		CASE _led_color OF
+			LED_Color_Enum.LED_RED:
+				LED_Red		:= TRUE;
+				LED_Green	:= FALSE;
+				LED_Blue	:= FALSE;
+			LED_Color_Enum.LED_GREEN:
+				LED_Red		:= FALSE;
+				LED_Green	:= TRUE;
+				LED_Blue	:= FALSE;
+			LED_Color_Enum.LED_BLUE:
+				LED_Red		:= FALSE;
+				LED_Green	:= FALSE;
+				LED_Blue	:= TRUE;
+			LED_Color_Enum.LED_WHITE:
+				LED_Red		:= TRUE;
+				LED_Green	:= TRUE;
+				LED_Blue	:= TRUE;
+			LED_Color_Enum.LED_YELLOW:
+				LED_Red		:= TRUE;
+				LED_Green	:= TRUE;
+				LED_Blue	:= FALSE;
+		END_CASE
+
+		// Flash
+		IF Mode = 2 THEN
+			LED_Red		:= LED_Red		AND rTON_Flash.ET >= rTON_Flash.PT/2;  
+			LED_Green	:= LED_Green	AND rTON_Flash.ET >= rTON_Flash.PT/2;  
+			LED_Blue	:= LED_Blue		AND rTON_Flash.ET >= rTON_Flash.PT/2;  
+		END_IF
+
+END_CASE]]></ST>
+    </Implementation>
+    <Method Name="Flash" Id="{aa33cb97-b143-4447-852a-7b1e81e047e6}">
+      <Declaration><![CDATA[METHOD Flash : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Mode	:= 2;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="LED_Color" Id="{ccb893f3-c24e-43e0-b98b-9584c20caf73}">
+      <Declaration><![CDATA[PROPERTY LED_Color : LED_Color_Enum]]></Declaration>
+      <Get Name="Get" Id="{adfdbba8-0782-49ba-93a2-12ff678c7284}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[LED_Color	:= _LED_Color;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{fd20af0c-2cca-43e4-9d6e-7deb00fbd3af}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_LED_Color	:= LED_Color;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="Off" Id="{2ea450f8-507b-40dd-907b-2eb1ac7ce932}">
+      <Declaration><![CDATA[METHOD Off : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Mode	:= 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="On" Id="{48818df5-149b-47fa-9be0-22d5daadc9e1}">
+      <Declaration><![CDATA[METHOD On : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Mode	:= 1;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_ShakeMovement" Id="{f685737d-4101-48dd-8223-9d1e9c189bd8}">
+    <Declaration><![CDATA[INTERFACE I_ShakeMovement
+]]></Declaration>
+    <Property Name="P_Return" Id="{3fae7c54-a3f7-4f58-8624-bf4b7f364047}">
+      <Declaration><![CDATA[PROPERTY P_Return : REFERENCE to ST_CommandReturn]]></Declaration>
+      <Get Name="Get" Id="{a54ffea6-5cc7-4015-adba-c7c1637a9022}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="StartMovement" Id="{4b3184dc-6ac8-40cf-993c-e9986ffe4194}">
+      <Declaration><![CDATA[METHOD StartMovement
+VAR_INPUT
+	NumCycles		: UINT;
+	Velo			: LREAL;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

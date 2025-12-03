@@ -1,0 +1,561 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <POU Name="MoverOffsets" Id="{a3e660fa-6e73-0f8a-0442-47839b4f3890}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MoverOffsets
+VAR_INPUT
+END_VAR
+VAR
+	// file name for CSV data
+	sFileName		: T_MaxString := 'C:\Data\MoverOffsets.csv';
+	Initialized		: BOOL;
+	WritePersistTrigger : BOOL;
+	ReadCSVOffsetsBusy	: BOOL;
+	rSetMoverOffset 	: r_trig;
+	rSetNominal			: r_trig;
+	rTeachMoverOffset	: r_trig;
+	rReadCSVOffsets		: r_trig;
+END_VAR
+VAR PERSISTENT
+	Offsets : ARRAY [1..12] OF LREAL;	// calculated mover offsets
+	NomimalLocation : LREAL;			// ideal location of first taught mover
+END_VAR
+VAR_INPUT
+	bSetMoverOffset 	: BOOL;
+	bSetNominal			: BOOL;
+	bTeachMoverOffset	: BOOL;
+	bReadCSVOffsets		: BOOL;
+	nMoverNumber		: UDINT;
+	fOffset				: LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// functionality for storing per-movers offsets and applying them to each mover's NC object
+// note the NC parameter "Other Settings\Position Correction" must be set to true on each axis manually (one time configuration change)
+
+(*
+All sample code provided by Beckhoff Automation LLC are for illustrative purposes only
+and are provided “as is” and without any warranties, express or implied. Actual
+implementations in applications will vary significantly. Beckhoff Automation LLC shall
+have no liability for, and does not waive any rights in relation to, any code samples that it
+provides or the use of such code samples for any purpose.
+*)
+
+// on first scan apply offsets to each mover
+// by using persistent data previous mover offsets are available automatically at first scan
+IF NOT Initialized THEN
+	// set initialized flag
+	Initialized := TRUE;
+	// apply all the offsets
+	ApplyAllOffsets();
+	// set separator to ,
+	DEFAULT_CSV_FIELD_SEP := 16#2C;	// comma for csv separator
+END_IF
+
+// call the persistint writer cyclic code
+PersistWriter();
+
+// rising edge detection for commands
+rSetMoverOffset(clk := bSetMoverOffset);
+rSetNominal(clk := bSetNominal);
+rTeachMoverOffset(clk := bTeachMoverOffset);
+rReadCSVOffsets(clk := bReadCSVOffsets);
+
+// call commands on rising edge
+IF (rSetMoverOffset.Q) THEN
+	SetMoverOffset(nMoverNumber, fOffset);
+END_IF
+
+IF (rSetNominal.Q) THEN
+	SetNominal(fOffset);
+END_IF
+
+IF (rTeachMoverOffset.Q) THEN
+	TeachMoverOffset(nMoverNumber);
+END_IF
+
+IF (rReadCSVOffsets.Q OR ReadCSVOffsetsBusy) THEN
+	ReadCSVOffsets();
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="ApplyAllOffsets" Id="{fac7250f-04fd-09d4-28e3-7097d222e081}">
+      <Declaration><![CDATA[METHOD ApplyAllOffsets : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i				: INT; 	// loop counter
+	AxisRef			: reference to AXIS_REF;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// apply the local, persistent offset data to all movers
+FOR i := 1 TO MAIN.XTS.NumMovers DO
+	AxisRef REF= MAIN.XTS.Mover[i].AxisReference;
+	AxisRef.PlcToNc.PositionCorrection := Offsets[i];
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="PersistWriter" Id="{a85675dc-372c-0179-1689-7735877a4285}">
+      <Declaration><![CDATA[METHOD PersistWriter : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	sCSVField		: T_MaxString := '';(* Single CSV field value (column, record field) *)
+	sTemp			: T_MaxString := '';
+END_VAR
+VAR_INST
+	State			: DINT;
+	iMover 			: UDINT;
+	sCSVLine		: T_MaxString := '';(* Single CSV text line (row, record), we are using string as record buffer (your are able to see created fields) *)
+	fbFileOpen		: FB_FileOpen;(* Opens file *)
+	fbFileClose		: FB_FileClose;(* Closes file *)
+	fbFilePuts		: FB_FilePuts;(* Writes one record (line) *)
+	fbWriter		: FB_CSVMemBufferWriter;(* Helper function block used to create CSV data bytes (single record line) *)
+	PersistentData : FB_WritePersistentData;
+	LastPersistentError : UDINT;
+	LastFileOpenError	: UDINT;
+	LastFilePutsError	: UDINT;
+	LastFileCloseError	: UDINT;
+	FileHandle			: UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// this method is called cyclically by MoverOffsets, it is not intended to be called directly
+// to trigger a write, use .WritePersistentData or one of the methods that implictly calls it, such as SetMoverOffset
+// persistent data is written using the provided FBs and to a CSV file that can manually be loaded on demand for ease of backup/trial/offline adjustments
+
+// csv format
+// <mover index>,<offset>
+
+CASE State OF
+	0:
+		// wait for start command
+		IF (WritePersistTrigger) THEN
+			// reset trigger
+			WritePersistTrigger := FALSE;
+			// move to next state
+			State := State + 10;
+		END_IF
+		
+	10:
+		// write via built-in persistance
+		PersistentData.START := TRUE;
+		// clean up of this method is handled in the FB call below
+		// next state
+		State := State + 10;
+		
+	20:
+		// write data to CSV
+		// reset open file command
+		fbFileOpen(bExecute := FALSE);
+		// open the file
+		fbFileOpen(
+			sNetId:= '', 	// local PC
+			sPathName:= sFileName, 
+			nMode:= FOPEN_MODEWRITE OR FOPEN_MODETEXT, // write in text mode
+			ePath:= PATH_GENERIC, 
+			bExecute:= TRUE, 
+		);
+		State := State + 10;
+	
+	30:
+		// wait for open complete
+		fbFileOpen( bExecute := FALSE, hFile => FileHandle );
+		IF NOT fbFileOpen.bBusy THEN
+			IF NOT fbFileOpen.bError THEN
+				LastFileOpenError := 0;
+				iMover := 0;
+				State := State + 10;
+			ELSE(* Error: file not found? *)
+				LastFileOpenError := fbFileOpen.nErrId;
+				State := 900;
+			END_IF
+		END_IF
+	
+	40:
+		// build the line
+		sCSVLine := '';
+		fbWriter.eCmd := eEnumCmd_First;	// first line in file
+		IF iMover <= MAIN.XTS.NumMovers THEN
+			// write the index
+			sTemp := UDINT_TO_STRING(iMover);
+			sCSVField := STRING_TO_CSVFIELD( sTemp , FALSE);
+			
+			// add index to the buffer
+			fbWriter(
+				pBuffer := ADR(sCSVLine),
+				cbBuffer := SIZEOF(sCSVLine),
+				putValue := sCSVField,
+				pValue := 0,
+				cbValue := 0,
+				bCRLF := FALSE, // not end of record
+			);
+			// set to next field
+			IF fbWriter.bOk THEN
+				fbWriter.eCmd := eEnumCmd_Next;(* Write next field value *)
+			ELSE(* Error *)
+				State := 900;
+			END_IF;
+		
+			// 0 is a special case for nominal
+			IF (iMover = 0) THEN
+				sTemp := LREAL_TO_STRING(NomimalLocation);
+				
+			ELSE
+				// non-zero is actual mover offsets
+				sTemp := LREAL_TO_STRING(Offsets[iMover]);
+			END_IF
+			sCSVField := STRING_TO_CSVFIELD( sTemp , FALSE);
+ 
+ 			// add position to buffer
+ 			fbWriter(
+				pBuffer := ADR(sCSVLine),
+				cbBuffer := SIZEOF(sCSVLine),
+				putValue := sCSVField,
+				pValue := 0,
+				cbValue := 0,
+				bCRLF := TRUE, // end of record
+			);
+			// set to next field
+			IF fbWriter.bOk THEN
+				fbWriter.eCmd := eEnumCmd_Next;(* Write next field value *)
+			ELSE(* Error *)
+				State := 900;
+			END_IF;
+			
+			// FB_FilePuts adds allready CR (carriage return) to the written line.
+			// We have to replace the $R$L characters with $L character to avoid double CR.
+			IF RIGHT( sCSVLine, 2 ) = '$R$L' THEN
+				sCSVLine := REPLACE( sCSVLine, '$L', 2, LEN( sCSVLine ) - 1 );
+			END_IF
+			
+			// write line
+			State := State + 10;
+			iMover := iMover + 1;
+		ELSE
+			// done writing movers, close file
+			State := 100;
+		END_IF;
+		
+	50:
+		// write line to file
+		fbFilePuts( bExecute := FALSE);
+		fbFilePuts( sNetId := '', hFile := FileHandle, sLine := sCSVLine, bExecute := TRUE);
+		State := State + 10;
+		
+	60:
+		// wait for not busy
+		fbFilePuts( bExecute := FALSE);
+		IF NOT fbFilePuts.bBusy THEN
+			IF NOT fbFilePuts.bError THEN
+				State := 40;(* Write next record *)
+				LastFilePutsError := 0;
+			ELSE(* Error *)
+				LastFilePutsError := fbFilePuts.nErrId;
+				State := 900;
+			END_IF
+		END_IF
+		
+	100:
+		// close the file
+		fbFileClose( bExecute := FALSE );
+		fbFileClose( sNetId := '', hFile := FileHandle, bExecute := TRUE );
+		State := State + 10;
+		
+	110:
+		// wait for close not busy
+		fbFileClose( bExecute := FALSE);
+		FileHandle := 0;
+		IF ( NOT fbFileClose.bBusy ) THEN
+			IF NOT (fbFileClose.bError) THEN
+				LastFileCloseError := 0;
+				State := 0;
+			ELSE
+				LastFileCloseError := fbFileClose.nErrId;
+				State := 900;
+			END_IF;
+		END_IF
+		
+	900:
+		// error state
+		// State := 0;
+ 
+END_CASE
+
+
+
+
+
+
+	
+	
+// call and manage the write persistent fb
+// write persistent data is called here cylically, and triggered with .WritePersistentData()
+PersistentData(
+	NETID:= '',	// local computer 
+	PORT:= 851,	// default PLC port 
+	//	START:= , // managed by calling .WritePersistentData() 
+	TMOUT:= T#1S, 
+	MODE:= E_PersistentMode.SPDM_VAR_BOOST,	// allow data to be written over multiple scans 
+);
+
+// reset start bit on done or error
+IF (PersistentData.START) AND (NOT PersistentData.BUSY) THEN
+	PersistentData.START := FALSE;
+	// clear last error
+	LastPersistentError := 0;
+END_IF
+IF (PersistentData.START) AND (PersistentData.ERR) THEN
+	// reset start 
+	PersistentData.START := FALSE;
+	// store error
+	LastPersistentError := PersistentData.ERRID;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ReadCSVOffsets" Id="{bc283e6a-9b43-09ff-1a31-7e7c46fb6450}">
+      <Declaration><![CDATA[METHOD ReadCSVOffsets : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	sCSVField		: T_MaxString := '';(* Single CSV field value (column, record field) *)
+	sTemp			: T_MaxString := '';
+	bError: BOOL;
+END_VAR
+VAR_INST
+	State			: DINT;
+	iMover 			: UDINT;
+	fOffset			: LREAL;
+	sCSVLine		: T_MaxString := '';(* Single CSV text line (row, record), we are using string as record buffer (your are able to see created fields) *)
+	fbFileOpen		: FB_FileOpen;(* Opens file *)
+	fbFileClose		: FB_FileClose;(* Closes file *)
+	fbFileGets		: FB_FileGets;(* Gets one record (line) *)
+	fbReader		: FB_CSVMemBufferReader;(* Helper function block used to parse CSV data bytes (single record line) *)
+	LastFileOpenError	: UDINT;
+	LastFileGetsError	: UDINT;
+	LastFileCloseError	: UDINT;
+	FileHandle			: UINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// read offsets from the csv file and apply them to movers (allows for offline saving/editing of offsets)
+
+// csv format
+// <mover index>,<offset>
+
+CASE State OF
+	0:
+		// set busy flag
+		ReadCSVOffsetsBusy := TRUE;
+		State := State + 10;
+	
+	10:
+		// reset open file command
+		fbFileOpen(bExecute := FALSE);
+		// open the file
+		fbFileOpen(
+			sNetId:= '', 	// local PC
+			sPathName:= sFileName, 
+			nMode:= FOPEN_MODEREAD OR FOPEN_MODETEXT, // write in text mode
+			ePath:= PATH_GENERIC, 
+			bExecute:= TRUE, 
+		);
+		State := State + 10;
+	
+	20:
+		// wait for open complete
+		fbFileOpen( bExecute := FALSE, hFile => FileHandle );
+		IF NOT fbFileOpen.bBusy THEN
+			IF NOT fbFileOpen.bError THEN
+				LastFileOpenError := 0;
+				iMover := 0;
+				State := State + 10;
+			ELSE(* Error: file not found? *)
+				LastFileOpenError := fbFileOpen.nErrId;
+				State := 900;
+			END_IF
+		END_IF
+		
+	30:
+		// read single line
+		fbFileGets( bExecute := FALSE );
+		fbFileGets( sNetId := '', hFile := FileHandle, bExecute := TRUE );
+		State := State + 10;
+		
+	40:
+		// wait for read not busy
+		fbFileGets( bExecute := FALSE, sLine => sCSVLine );
+		IF NOT fbFileGets.bBusy THEN
+			IF NOT fbFileGets.bError THEN
+				IF fbFileGets.bEOF THEN
+					State := 100;(* End of file reached => Close source file *)
+				ELSE
+					(* FB_FileGets returns text line without the CR (carriage return) character.
+					We have to restore the CR character (replace the $L character with $R$L characters) *)
+					IF RIGHT( sCSVLine, 1 ) = '$L' THEN
+						sCSVLine := REPLACE( sCSVLine, '$R$L', 2, LEN( sCSVLine ) );
+					END_IF
+					LastFileGetsError := 0;
+					State := State + 10;
+				END_IF
+			ELSE(* Error *)
+				LastFileGetsError := fbFileGets.nErrId;
+				State := 900;
+			END_IF
+		END_IF
+		
+	50:
+		// parse each line
+		fbReader.eCmd := eEnumCmd_First;(* Read first field value *)
+		// parse single line
+		fbReader( pBuffer := ADR( sCSVLine ), cbBuffer := SIZEOF( sCSVLine ), getValue => sCSVField );
+		// first field is mover index
+		IF fbReader.bOk THEN
+			fbReader.eCmd := eEnumCmd_Next;(* Read next field value *)
+			iMover := STRING_TO_UDINT(sCSVField);
+			
+			// read mover's value
+			fbReader( pBuffer := ADR( sCSVLine ), cbBuffer := SIZEOF( sCSVLine ), getValue => sCSVField );
+			IF fbReader.bOk THEN
+				fOffset := STRING_TO_LREAL(sCSVField);
+				// bounds check on mover index
+				IF (iMover >= 1 AND iMover < MAIN.XTS.NumMovers) THEN
+					// store the offset
+					Offsets[iMover] := fOffset;
+				ELSIF iMover = 0 THEN
+					// mover 0 is the nominal location
+					NomimalLocation := fOffset;
+				END_IF;
+				
+			END_IF
+		END_IF
+		// get next line
+		State := 30;
+		
+	100:
+		// close the file
+		fbFileClose( bExecute := FALSE );
+		fbFileClose( sNetId := '', hFile := FileHandle, bExecute := TRUE );
+		State := State + 10;
+		
+	110:
+		// wait for close not busy
+		fbFileClose( bExecute := FALSE);
+		FileHandle := 0;
+		IF ( NOT fbFileClose.bBusy ) THEN
+			IF NOT (fbFileClose.bError) THEN
+				LastFileCloseError := 0;
+				State := 120;
+			ELSE
+				LastFileCloseError := fbFileClose.nErrId;
+				State := 900;
+			END_IF;
+		END_IF
+		
+	120:
+		// apply offsets
+		ApplyAllOffsets();
+		// reset busy flag
+		ReadCSVOffsetsBusy := 0;
+		State := 0;
+
+	900:
+		// error state
+		// clear busy
+		ReadCSVOffsetsBusy := 0;
+		State := 0;
+		
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetMoverOffset" Id="{e10c247f-087f-0677-3313-e4feddeb8007}">
+      <Declaration><![CDATA[METHOD SetMoverOffset : BOOL
+VAR_INPUT
+	MoverNumber : UDINT;
+	Offset		: LREAL;
+END_VAR
+VAR
+	AxisRef : reference to AXIS_REF;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// set the offset in the array, update the parameter in the NC and store persistent data for cold-starts
+
+// bounds check
+IF MoverNumber > 0 AND MoverNumber <= MAIN.XTS.NumMovers THEN
+	// update the array
+	Offsets[MoverNumber] := Offset;
+	
+	// update NC (takes effect immediately)
+	AxisRef REF= MAIN.XTS.Mover[MoverNumber].AxisReference;
+	AxisRef.PlcToNc.PositionCorrection := Offset;
+	
+	// store persistent data
+	WritePersistentData();
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetNominal" Id="{0e40c008-ef59-0a55-2531-9510e0d63b28}">
+      <Declaration><![CDATA[METHOD SetNominal : BOOL
+VAR_INPUT
+	Nominal : lreal;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[NomimalLocation := Nominal;
+// write the persistent data
+WritePersistentData();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TeachMoverOffset" Id="{96ae608a-75ed-0d29-0b82-2689a04311a6}">
+      <Declaration><![CDATA[METHOD TeachMoverOffset : BOOL
+VAR_INPUT
+	MoverNumber : UDINT;
+END_VAR
+VAR
+	Offset : LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// teach takes the current position of a mover, accounts for nominal and then calls SetMoverOffset to complete saving persistent data and applying the new offset
+
+// bounds check
+IF MoverNumber > 0 AND MoverNumber <= MAIN.XTS.NumMovers THEN
+	// calculate the offset from nominal
+	Offset := NomimalLocation - MAIN.XTS.Mover[MoverNumber].AxisReference.NcToPlc.ModuloSetPos;
+	// update the mover offset
+	SetMoverOffset(MoverNumber, Offset);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="WritePersistentData" Id="{af1bef7f-d33e-0bc8-3893-388f79d54c7e}">
+      <Declaration><![CDATA[METHOD WritePersistentData : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[WritePersistTrigger := true;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="MoverOffsets">
+      <LineId Id="1" Count="46" />
+    </LineIds>
+    <LineIds Name="MoverOffsets.ApplyAllOffsets">
+      <LineId Id="1" Count="4" />
+    </LineIds>
+    <LineIds Name="MoverOffsets.PersistWriter">
+      <LineId Id="1" Count="190" />
+    </LineIds>
+    <LineIds Name="MoverOffsets.ReadCSVOffsets">
+      <LineId Id="1" Count="128" />
+    </LineIds>
+    <LineIds Name="MoverOffsets.SetMoverOffset">
+      <LineId Id="1" Count="13" />
+    </LineIds>
+    <LineIds Name="MoverOffsets.SetNominal">
+      <LineId Id="1" Count="2" />
+    </LineIds>
+    <LineIds Name="MoverOffsets.TeachMoverOffset">
+      <LineId Id="1" Count="8" />
+    </LineIds>
+    <LineIds Name="MoverOffsets.WritePersistentData">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

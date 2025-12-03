@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.10">
+  <POU Name="ClockGenerator" Id="{5e4b06ce-8834-4fcf-b24e-24a6ca47909b}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM ClockGenerator
+VAR
+	
+	nCycleTime								:UDINT;		(* Cycle time from the PLC Task *)
+	nTimeValue								:INT;		(* Time value clock generator*)
+	
+END_VAR
+(* End *)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Clock generator *)
+
+	(* PLC cycle time in ms  *)
+	nCycleTime	:=	TwinCAT_SystemInfoVarList._TaskInfo[GETCURTASKINDEXEX()].cycleTime / 10000;
+
+	
+	(* Calculate with the cycle time the time value *)
+	nTimeValue	:=	nTimeValue + UDINT_TO_INT(nCycleTime);
+
+	
+	(* Generate the clocks and the rising edges with the time value *)
+	CASE nTimeValue OF
+
+		500		:	bClock500ms			:=	TRUE;
+					bRisingEdge500ms	:=	TRUE;
+
+		1000	:	bClock500ms			:=	FALSE;
+					bRisingEdge500ms	:=	TRUE;
+					bClock1s			:=	TRUE;
+					bRisingEdge1s		:=	TRUE;
+
+		1500	:	bClock500ms			:=	TRUE;
+					bRisingEdge500ms	:=	TRUE;
+
+		2000	:	bClock500ms			:=	FALSE;
+					bRisingEdge500ms	:=	TRUE;
+					bClock1s			:=	FALSE;
+					bRisingEdge1s		:=	TRUE;
+					bClock2s			:=	TRUE;
+					bRisingEdge2s		:=	TRUE;
+
+		2500	:	bClock500ms			:=	TRUE;
+					bRisingEdge500ms	:=	TRUE;
+
+		3000	:	bClock500ms			:=	FALSE;
+					bRisingEdge500ms	:=	TRUE;
+					bClock1s			:=	TRUE;
+					bRisingEdge1s		:=	TRUE;
+
+		3500	:	bClock500ms			:=	TRUE;
+					bRisingEdge500ms	:=	TRUE;
+
+		4000	:	bClock500ms			:=	FALSE;
+					bRisingEdge500ms	:=	TRUE;
+			 		bClock1s			:=	FALSE;
+					bRisingEdge1s		:=	TRUE;
+					bClock2s			:=	FALSE;
+					bRisingEdge2s		:=	TRUE;
+					
+	ELSE
+
+		(* Reset the rising edge variables after one cycle *)
+		bRisingEdge500ms	:=	FALSE;
+		bRisingEdge1s		:=	FALSE;
+		bRisingEdge2s		:=	FALSE;
+
+	END_CASE;
+
+	
+	(* Sequence reset at 4000ms *)
+	IF nTimeValue >= 4000
+	THEN
+		nTimeValue := 0;
+	END_IF
+	
+
+	(* Outputs *)
+	bLedH15 := bSwitchS15 AND bClock500ms;
+	bLedH16 := bSwitchS16 AND bClock1s;
+	bLedH17 := bSwitchS17 AND bClock2s;
+
+
+(* End *)]]></ST>
+    </Implementation>
+    <LineIds Name="ClockGenerator">
+      <LineId Id="3" Count="3" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="7" Count="2" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="10" Count="47" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="58" Count="5" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="86" Count="1" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

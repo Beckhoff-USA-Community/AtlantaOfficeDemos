@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <POU Name="FB_BounceStation" Id="{7f74bc91-bb45-4e3f-96ca-12b6692028f4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BounceStation EXTENDS FB_XPlanarStationBase
+VAR
+	_StationAngle  : LREAL;
+	ProcessState	: INT;
+	ProcessStateOld	: INT;
+	TON_StateChange	: TON := (PT := T#100MS);
+	CommandResultDone	: BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Execute" Id="{912e8c49-eef5-4d60-b3f4-cd091b11ea4a}">
+      <Declaration><![CDATA[METHOD Execute
+VAR_INST
+	i			  : UDINT := 1;
+	CommandResult : I_PlanarTaskResult;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.Execute();
+IF StationState = E_XPlanarStationState.ProcessMover THEN
+	CASE ProcessState OF
+
+		0:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(3.0);
+			ProcessState		:= 1;
+
+		1:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 2;
+			END_IF
+
+		2:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(1.0);
+			ProcessState 		:= 3;
+
+		3:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 4;
+			END_IF
+			
+		4:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(4.0);
+			ProcessState 		:= 5;
+
+		5:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 6;
+			END_IF
+			
+		6:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(1.0);
+			ProcessState		:= 7;
+
+		7:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 8;
+			END_IF
+			
+		8:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(5.0);
+			ProcessState 		:= 9;
+
+		9:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 10;
+			END_IF
+			
+		10:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(1.0);
+			ProcessState 		:= 11;
+
+		11:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 12;
+			END_IF
+			
+		12:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(6.0);
+			ProcessState 		:= 13;
+
+		13:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 14;
+			END_IF
+
+		14:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(2.0);
+			ProcessState 		:= 15;
+
+		15:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 16;
+			END_IF
+
+		16:	// Done
+			_StationComplete 	:= TRUE;
+
+	END_CASE
+
+	// Timer Call
+	TON_StateChange(IN := ProcessState = ProcessStateOld);
+
+ELSE
+	ProcessState	:= 0;
+	TON_StateChange(IN := FALSE);
+
+END_IF
+
+// Save Prevoius Values
+ProcessStateOld	:= ProcessState;
+
+// Debug
+IF CommandResult <> 0 THEN
+	CommandResultDone	:= CommandResult.Done;
+ELSE
+	CommandResultDone	:= FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="StationAngle" Id="{96ffc844-1e78-4117-b909-d82e25a357fa}">
+      <Declaration><![CDATA[PROPERTY StationAngle : LREAL]]></Declaration>
+      <Set Name="Set" Id="{cbf5d728-a066-4376-ab0c-34d5a20fecb4}">
+        <Declaration><![CDATA[VAR
+END_VAR]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_StationAngle := StationAngle;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_BounceStation">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BounceStation.Execute">
+      <LineId Id="1" Count="98" />
+    </LineIds>
+    <LineIds Name="FB_BounceStation.StationAngle.Set">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <DUT Name="XTSDiag_MoverInfo" Id="{61e17136-d189-00a6-0a9c-d9a0317196c6}">
+    <Declaration><![CDATA[TYPE XTSDiag_MoverInfo :
+STRUCT
+	FollowingError	: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF LREAL;
+	SetPosition		: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF LREAL;
+	SetVelocity		: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF REAL;
+	SetAcceleration	: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF REAL;
+	SetCurrent		: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF LREAL;
+	SetForce		: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF LREAL;
+	Error			: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF BOOL;
+	ErrorID			: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF UDINT;
+	Ready			: ARRAY[1..GVL_XTSDiag.MAX_NUM_MOVERS] OF BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

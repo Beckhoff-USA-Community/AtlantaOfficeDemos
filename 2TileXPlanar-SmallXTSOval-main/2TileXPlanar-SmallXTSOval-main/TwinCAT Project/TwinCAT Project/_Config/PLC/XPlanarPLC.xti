@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.11" ClassName="CNestedPlcProjDef" TcProjectVariant="Hardware">
+	<Project GUID="{14335365-1F5B-4D26-9590-7847BF3DBF21}" Name="XPlanarPLC" PrjFilePath="..\..\XPlanarPLC\XPlanarPLC.plcproj" TmcFilePath="..\..\XPlanarPLC\XPlanarPLC.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
+		<Instance File="XPlanarPLC Instance.xti"/>
+	</Project>
+</TcSmItem>

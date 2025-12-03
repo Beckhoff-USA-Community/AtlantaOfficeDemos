@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.3">
+  <DUT Name="E_SystemStartupSequence" Id="{6e89f961-9ac8-4492-815b-61efbcb1f449}">
+    <Declaration><![CDATA[TYPE E_SystemStartupSequence :
+(
+
+	eSystemStart_Start						:= 0,
+	eSystemStart_Init						:= 10,
+	eSystemStart_LedOn						:= 100,
+	eSystemStart_LedOff						,
+	eSystemStart_Done						:= 500,
+	eSystemStart_ErrorStep 					:= 999,
+	eSystemStart_NoError
+	
+);
+END_TYPE
+(* End *)]]></Declaration>
+  </DUT>
+</TcPlcObject>

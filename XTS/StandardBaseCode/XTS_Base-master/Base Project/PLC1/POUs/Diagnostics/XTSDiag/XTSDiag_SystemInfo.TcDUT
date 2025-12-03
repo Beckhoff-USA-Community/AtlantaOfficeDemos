@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <DUT Name="XTSDiag_SystemInfo" Id="{39a6dea9-3958-0659-34d2-25404a07d77e}">
+    <Declaration><![CDATA[TYPE XTSDiag_SystemInfo :
+STRUCT
+	BusVoltage			: ARRAY[0..1] OF REAL;	
+	ModuleCount			: UDINT;
+	MoverCount			: UDINT;
+	TotalMoverCurrent	: REAL;	// Sum of Mover Set Currents
+	TotalModuleCurrent	: REAL; // Sum of Motor Overall Currents
+	AvailableContinuousCurrent	: REAL;
+
+	TotalCurrentUsagePct_MoverCalc	: REAL;	// TotalMoverCurrent divided by available current
+	TotalCurrentUsagePct_ModuleCalc	: REAL;	// TotalModuleCurrent divided by available current
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

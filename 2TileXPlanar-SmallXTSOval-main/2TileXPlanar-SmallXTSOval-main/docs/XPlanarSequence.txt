@@ -1,0 +1,46 @@
+- Rotary switch it put in the left position
+
+- move to seqence start position:
+	IF mover[1].std.P_ActPosition.y < mover[2].std.P_ActPosition.y THEN
+		ipMover[1] := mover[1];	
+		ipMover[2] := mover[2];	
+	ELSE
+		ipMover[1] := mover[2];	
+		ipMover[2] := mover[1];	
+	END_IF
+
+	StartPos[1].SetValuesXYC(120,120,0);
+	StartPos[2].SetValuesXYC(120,360,0);
+
+
+- Move to figure 8 start position
+	StartPosEight[1].SetValuesXYC(60,60,0);
+	StartPosEight[2].SetValuesXYC(180,180,0);
+
+- Join track	
+
+- Loop around the track 5 times
+	ipMover[1].std.MoveOnTrack('',track8,864 +(5*fTrackLength),fSpeedEight,5000,500000,30,MC_Direction.mcDirectionNonModulo);
+	ipMover[2].std.MoveOnTrack('',track8,651+(5*fTrackLength),fSpeedEight,5000,500000,30,MC_Direction.mcDirectionNonModulo);	
+
+- Leave track, and go to "Figure 8 start position"
+	ipMover[1].std.LeaveTrack('',StartPosEight[1],1000,5000,5000,50000,0);
+	ipMover[2].std.LeaveTrack('',StartPosEight[2],1000,5000,5000,50000,0);
+
+-Go to oposite opssing corners
+
+-fly by 10 times in Y direction
+
+-move around the perimiter 5 times.  
+
+-move to center of tiles
+
+-Rotate inverse of eachother
+
+-Full rotations
+
+-Tilt all 6 Axis
+
+-end
+	
+

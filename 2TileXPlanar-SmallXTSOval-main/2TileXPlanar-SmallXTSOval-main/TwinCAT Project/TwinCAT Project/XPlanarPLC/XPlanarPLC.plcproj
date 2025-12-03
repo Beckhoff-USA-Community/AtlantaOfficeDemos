@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FileVersion>1.0.0.0</FileVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{14335365-1f5b-4d26-9590-7847bf3dbf21}</ProjectGuid>
+    <SubObjectsSortedByName>true</SubObjectsSortedByName>
+    <DownloadApplicationInfo>true</DownloadApplicationInfo>
+    <WriteProductVersion>false</WriteProductVersion>
+    <GenerateTpy>false</GenerateTpy>
+    <Name>XPlanarPLC</Name>
+    <ProgramVersion>3.1.4026.19</ProgramVersion>
+    <Application>{93383e55-0563-4d55-983f-785e5f1ef74f}</Application>
+    <TypeSystem>{acf27d35-38a3-4a10-a832-d92a6c3e2386}</TypeSystem>
+    <Implicit_Task_Info>{d9616fc0-c5d6-4b9a-8e38-9f4f7284e851}</Implicit_Task_Info>
+    <Implicit_KindOfTask>{66afb06a-3636-411b-889d-8734e99b743c}</Implicit_KindOfTask>
+    <Implicit_Jitter_Distribution>{42654b0a-9caf-487c-9658-5e06d3f9bd93}</Implicit_Jitter_Distribution>
+    <LibraryReferences>{e488e2e8-c2c9-4007-8fe9-494ceb59f681}</LibraryReferences>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="DUTs\Estop\E_EStop.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\Estop\ST_EstopIO.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\Estop\U_Estop.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\E_DemoStep.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\Selector switch\E_SelectorSwitchPos.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\Selector switch\ST_SelectorSwitchIO.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\Selector switch\U_SelectorSwitch.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Point.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PlcTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\F_SetAllMoversMovement.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\F_SetAllMoversRotation.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Pushbuttons\FB_Pushbutton.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Pushbuttons\LED_Color_Enum.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Pushbuttons\Pushbutton_Enum.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DUTs" />
+    <Folder Include="DUTs\Estop" />
+    <Folder Include="DUTs\Selector switch" />
+    <Folder Include="GVLs" />
+    <Folder Include="POUs\Pushbuttons" />
+    <Folder Include="VISUs" />
+    <Folder Include="POUs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="SPT Base Types">
+      <DefaultResolution>SPT Base Types, * (Beckhoff Automation LLC)</DefaultResolution>
+      <Namespace>SPT_BaseTypes</Namespace>
+      <Parameters>
+        <Parameter ListName="PARAMETERS_BASECOMPONENT">
+          <Key>COMPONENT_BASE_ALARM_COUNT</Key>
+          <Value>2</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_BASECOMPONENT">
+          <Key>INHIBIT_SIMULATION_WARNING</Key>
+          <Value>FALSE</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>COMPONENT_NAME_DELIMETER</Key>
+          <Value>' '</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>CONCAT_COMPONENT_NAME_WITH_PARENT</Key>
+          <Value>TRUE</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>CONCAT_SUBMODULE_NAME_WITH_PARENT</Key>
+          <Value>FALSE</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>MAX_NO_OF_COMPONENTS</Key>
+          <Value>32</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>MAX_NO_OF_EXTERNAL_CONTROLLERS</Key>
+          <Value>10</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>MAX_NO_OF_SUBMODULES</Key>
+          <Value>20</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>RESET_COMPONENTS_WITHOUT_ERROR</Key>
+          <Value>FALSE</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>STATELOGGER_DISABLED</Key>
+          <Value>FALSE</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>SUBMODULE_NAME_DELIMETER</Key>
+          <Value>' '</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>UNIT_MODE_DEFAULT</Key>
+          <Value>E_PMLUnitMode.ePMLUnitMode_Production</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_PACKML_BASE">
+          <Key>UNIT_STATE_DEFAULT</Key>
+          <Value>E_PMLCommand.ePMLCommand_Abort</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_TRACING">
+          <Key>ALLOW_DUPLICATE_SEQUENTIAL_MESSAGES</Key>
+          <Value>FALSE</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_TRACING">
+          <Key>MAX_LOG_ENTRIES_PER_SCAN</Key>
+          <Value>100</Value>
+        </Parameter>
+        <Parameter ListName="PARAMETERS_TRACING">
+          <Key>TRACING_ENABLED</Key>
+          <Value>TRUE</Value>
+        </Parameter>
+      </Parameters>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Standard">
+      <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Standard</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+      <Parameters>
+        <Parameter ListName="PARAM">
+          <Key>STRING_LENGTH_ADDRESS</Key>
+          <Value>20</Value>
+        </Parameter>
+        <Parameter ListName="PARAM">
+          <Key>STRING_LENGTH_COMMENT</Key>
+          <Value>255</Value>
+        </Parameter>
+        <Parameter ListName="PARAM">
+          <Key>STRING_LENGTH_EXP</Key>
+          <Value>255</Value>
+        </Parameter>
+        <Parameter ListName="PARAM">
+          <Key>STRING_LENGTH_OUTSTRING</Key>
+          <Value>255</Value>
+        </Parameter>
+        <Parameter ListName="PARAM">
+          <Key>TABLE_SHOW_VALID_ITEMS</Key>
+          <Value>FALSE</Value>
+        </Parameter>
+        <Parameter ListName="PARAM">
+          <Key>TABLE_UPPER_BOUND</Key>
+          <Value>15</Value>
+        </Parameter>
+      </Parameters>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Utilities">
+      <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Utilities</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Mc3PlanarMotion">
+      <DefaultResolution>Tc3_Mc3PlanarMotion, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Mc3PlanarMotion</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_XPlanarUtility">
+      <DefaultResolution>Tc3_XPlanarUtility, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_XPlanarUtility</Namespace>
+      <Parameters>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXAREAS</Key>
+          <Value>5</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXENVIRONMENTS</Key>
+          <Value>1</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXETHERCATMASTER</Key>
+          <Value>10</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXEXTFEEDBACKPARAMETRIZATIONSETS</Key>
+          <Value>10</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXGROUPS</Key>
+          <Value>10</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXMCPLANARMOVERS</Key>
+          <Value>100</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXMOVERPARAMETRIZATIONSETS</Key>
+          <Value>10</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXPARTS</Key>
+          <Value>10</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXPROCESSINGUNITS</Key>
+          <Value>4</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXSUBTILES</Key>
+          <Value>3</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXTILES</Key>
+          <Value>100</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXTILESPERPART</Key>
+          <Value>100</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXTRACKS</Key>
+          <Value>20</Value>
+        </Parameter>
+        <Parameter ListName="PARAM_TCIOXPLANARENVIRONMENT">
+          <Key>MAXXPLANARMOVERSPERXPU</Key>
+          <Value>40</Value>
+        </Parameter>
+      </Parameters>
+    </PlaceholderReference>
+    <PlaceholderReference Include="XPlanarApplication">
+      <DefaultResolution>XPlanarApplication, * (Beckhoff Automation LLC)</DefaultResolution>
+      <Namespace>XPlanarApplication</Namespace>
+      <Parameters>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>ASSUMEDMOVERSIZE</Key>
+          <Value>50</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>ENABLECOMMANDTRACING</Key>
+          <Value>FALSE</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>MAX_LOG_COUNT</Key>
+          <Value>20</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>MAX_OBJECTS_PER_TRACK</Key>
+          <Value>20</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>MAXMOVERSPERSTATION</Key>
+          <Value>4</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>MOVER_COUNT</Key>
+          <Value>2</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>STATION_COUNT</Key>
+          <Value>0</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>TILEDIAGUPDATE</Key>
+          <Value>0</Value>
+        </Parameter>
+        <Parameter ListName="SYSTEMPARAMETERS">
+          <Key>TRACK_COUNT</Key>
+          <Value>1</Value>
+        </Parameter>
+      </Parameters>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderResolution Include="System_VisuElemMeter">
+      <Resolution>VisuElemMeter, * (System)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="System_VisuElems">
+      <Resolution>VisuElems, * (System)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="System_VisuElemsSpecialControls">
+      <Resolution>VisuElemsSpecialControls, * (System)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="System_VisuElemsWinControls">
+      <Resolution>VisuElemsWinControls, * (System)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="System_VisuElemTextEditor">
+      <Resolution>VisuElemTextEditor, * (System)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="System_VisuElemXYChart">
+      <Resolution>VisuElemXYChart, * (System)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="System_VisuInputs">
+      <Resolution>VisuInputs, * (System)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="System_VisuNativeControl">
+      <Resolution>VisuNativeControl, * (System)</Resolution>
+    </PlaceholderResolution>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="XPlanarPLC.tmc">
+      <SubType>Content</SubType>
+    </None>
+  </ItemGroup>
+  <ProjectExtensions>
+    <PlcProjectOptions>
+      <XmlArchive>
+        <Data>
+          <o xml:space="preserve" t="OptionKey">
+      <v n="Name">"&lt;ProjectRoot&gt;"</v>
+      <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
+        <v>{192FAD59-8248-4824-A8DE-9177C94C195A}</v>
+        <o>
+          <v n="Name">"{192FAD59-8248-4824-A8DE-9177C94C195A}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" />
+        </o>
+        <v>{246001F4-279D-43AC-B241-948EB31120E1}</v>
+        <o>
+          <v n="Name">"{246001F4-279D-43AC-B241-948EB31120E1}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" />
+        </o>
+        <v>{29BD8D0C-3586-4548-BB48-497B9A01693F}</v>
+        <o>
+          <v n="Name">"{29BD8D0C-3586-4548-BB48-497B9A01693F}"</v>
+          <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
+            <v>Metrics</v>
+            <o>
+              <v n="Name">"Metrics"</v>
+              <d n="SubKeys" t="Hashtable" />
+              <d n="Values" t="Hashtable" />
+            </o>
+            <v>NamingConventions</v>
+            <o>
+              <v n="Name">"NamingConventions"</v>
+              <d n="SubKeys" t="Hashtable" />
+              <d n="Values" t="Hashtable" />
+            </o>
+            <v>Rules</v>
+            <o>
+              <v n="Name">"Rules"</v>
+              <d n="SubKeys" t="Hashtable" />
+              <d n="Values" t="Hashtable" />
+            </o>
+          </d>
+          <d n="Values" t="Hashtable" />
+        </o>
+        <v>{40450F57-0AA3-4216-96F3-5444ECB29763}</v>
+        <o>
+          <v n="Name">"{40450F57-0AA3-4216-96F3-5444ECB29763}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="String">
+            <v>ActiveVisuProfile</v>
+            <v>IR0whWr8bwcQCAAAY7rhNAAAAACAAgAAGMPQIgAAAAABAAAAAAAAAAEaUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwACTHsAZgA5ADUAYgBiADQAMgA2AC0ANQA1ADIANAAtADQAYgA0ADUALQA5ADQAMAAwAC0AZgBiADAAZgAyAGUANwA3AGUANQAxAGIAfQADCE4AYQBtAGUABDBUAHcAaQBuAEMAQQBUACAAMwAuADEAIABCAHUAaQBsAGQAIAA0ADAAMgA2AC4ANwAFFlAAcgBvAGYAaQBsAGUARABhAHQAYQAGTHsAMQA2AGUANQA1AGIANgAwAC0ANwAwADQAMwAtADQAYQA2ADMALQBiADYANQBiAC0ANgAxADQANwAxADMAOAA3ADgAZAA0ADIAfQAHEkwAaQBiAHIAYQByAGkAZQBzAAhMewAzAGIAZgBkADUANAA1ADkALQBiADAANwBmAC0ANABkADYAZQAtAGEAZQAxAGEALQBhADgAMwAzADUANgBhADUANQAxADQAMgB9AAlMewA5AGMAOQA1ADgAOQA2ADgALQAyAGMAOAA1AC0ANAAxAGIAYgAtADgAOAA3ADEALQA4ADkANQBmAGYAMQBmAGUAZABlADEAYQB9AAoOVgBlAHIAcwBpAG8AbgALBmkAbgB0AAwKVQBzAGEAZwBlAA0KVABpAHQAbABlAA4aVgBpAHMAdQBFAGwAZQBtAE0AZQB0AGUAcgAPDkMAbwBtAHAAYQBuAHkAEAxTAHkAcwB0AGUAbQARElYAaQBzAHUARQBsAGUAbQBzABIwVgBpAHMAdQBFAGwAZQBtAHMAUwBwAGUAYwBpAGEAbABDAG8AbgB0AHIAbwBsAHMAEyhWAGkAcwB1AEUAbABlAG0AcwBXAGkAbgBDAG8AbgB0AHIAbwBsAHMAFCRWAGkAcwB1AEUAbABlAG0AVABlAHgAdABFAGQAaQB0AG8AcgAVIlYAaQBzAHUATgBhAHQAaQB2AGUAQwBvAG4AdAByAG8AbAAWHlYAaQBzAHUARQBsAGUAbQBYAFkAQwBoAGEAcgB0ABcUVgBpAHMAdQBJAG4AcAB1AHQAcwAYGFYAaQBzAHUARQBsAGUAbQBCAGEAcwBlABkmRABlAHYAUABsAGEAYwBlAGgAbwBsAGQAZQByAHMAVQBzAGUAZAAaCGIAbwBvAGwAGyJQAGwAdQBnAGkAbgBDAG8AbgBzAHQAcgBhAGkAbgB0AHMAHEx7ADQAMwBkADUAMgBiAGMAZQAtADkANAAyAGMALQA0ADQAZAA3AC0AOQBlADkANAAtADEAYgBmAGQAZgAzADEAMABlADYAMwBjAH0AHRxBAHQATABlAGEAcwB0AFYAZQByAHMAaQBvAG4AHhRQAGwAdQBnAGkAbgBHAHUAaQBkAB8WUwB5AHMAdABlAG0ALgBHAHUAaQBkACBIYQBmAGMAZAA1ADQANAA2AC0ANAA5ADEANAAtADQAZgBlADcALQBiAGIANwA4AC0AOQBiAGYAZgBlAGIANwAwAGYAZAAxADcAIRRVAHAAZABhAHQAZQBJAG4AZgBvACJMewBiADAAMwAzADYANgBhADgALQBiADUAYwAwAC0ANABiADkAYQAtAGEAMAAwAGUALQBlAGIAOAA2ADAAMQAxADEAMAA0AGMAMwB9ACMOVQBwAGQAYQB0AGUAcwAkTHsAMQA4ADYAOABmAGYAYwA5AC0AZQA0AGYAYwAtADQANQAzADIALQBhAGMAMAA2AC0AMQBlADMAOQBiAGIANQA1ADcAYgA2ADkAfQAlTHsAYQA1AGIAZAA0ADgAYwAzAC0AMABkADEANwAtADQAMQBiADUALQBiADEANgA0AC0ANQBmAGMANgBhAGQAMgBiADkANgBiADcAfQAmFk8AYgBqAGUAYwB0AHMAVAB5AHAAZQAnVFUAcABkAGEAdABlAEwAYQBuAGcAdQBhAGcAZQBNAG8AZABlAGwARgBvAHIAQwBvAG4AdgBlAHIAdABpAGIAbABlAEwAaQBiAHIAYQByAGkAZQBzACgQTABpAGIAVABpAHQAbABlACkUTABpAGIAQwBvAG0AcABhAG4AeQAqHlUAcABkAGEAdABlAFAAcgBvAHYAaQBkAGUAcgBzACs4UwB5AHMAdABlAG0ALgBDAG8AbABsAGUAYwB0AGkAbwBuAHMALgBIAGEAcwBoAHQAYQBiAGwAZQAsEnYAaQBzAHUAZQBsAGUAbQBzAC0McwB5AHMAdABlAG0ALkg2AGMAYgAxAGMAZABlADEALQBkADUAZABjAC0ANABhADMAYgAtADkAMAA1ADQALQAyADEAZgBhADcANQA2AGEAMwBmAGEANAAvKEkAbgB0AGUAcgBmAGEAYwBlAFYAZQByAHMAaQBvAG4ASQBuAGYAbwAwTHsAYwA2ADEAMQBlADQAMAAwAC0ANwBmAGIAOQAtADQAYwAzADUALQBiADkAYQBjAC0ANABlADMAMQA0AGIANQA5ADkANgA0ADMAfQAxGE0AYQBqAG8AcgBWAGUAcgBzAGkAbwBuADIYTQBpAG4AbwByAFYAZQByAHMAaQBvAG4AMwxMAGUAZwBhAGMAeQA0MEwAYQBuAGcAdQBhAGcAZQBNAG8AZABlAGwAVgBlAHIAcwBpAG8AbgBJAG4AZgBvADUwTABvAGEAZABMAGkAYgByAGEAcgBpAGUAcwBJAG4AdABvAFAAcgBvAGoAZQBjAHQANhpDAG8AbQBwAGEAdABpAGIAaQBsAGkAdAB5ANAAAhoD0AMBLQTQBQYaB9AHCBoBRQcJCdAACRoERQoLBAQAAAAGAAAAAAAAAAAAAADQDAutAgAAANANAS0O0A8BLRDQAAkaBEUKCwQEAAAABgAAAAAAAAAAAAAA0AwLrQEAAADQDQEtEdAPAS0Q0AAJGgRFCgsEBAAAAAYAAAAAAAAAAAAAANAMC60CAAAA0A0BLRLQDwEtENAACRoERQoLBAQAAAAGAAAAAAAAAAAAAADQDAutAgAAANANAS0T0A8BLRDQAAkaBEUKCwQEAAAABgAAAAAAAAAAAAAA0AwLrQIAAADQDQEtFNAPAS0Q0AAJGgRFCgsEBAAAAAYAAAAAAAAAAAAAANAMC60CAAAA0A0BLRXQDwEtENAACRoERQoLBAQAAAAGAAAAAAAAAAAAAADQDAutAgAAANANAS0W0A8BLRDQAAkaBEUKCwQEAAAABgAAAAAAAAAAAAAA0AwLrQIAAADQDQEtF9APAS0Q0AAJGgRFCgsEBAAAAAYAAAAAAAAAAAAAANAMC60EAAAA0A0BLRjQDwEtENAZGq0BRRscAdAAHBoCRR0LBAQAAAACAAAAAAAAAAAAAADQHh8tINAhIhoCRSMkAtAAJRoFRQoLBAMAAAADAAAAAAAAAAoAAADQJgutAAAAANADAS0n0CgBLRHQKQEtENAAJRoFRQoLBAMAAAADAAAAAAAAAAoAAADQJgutAQAAANADAS0n0CgBLRHQKQEtEJoqKwFFAAEC0AABLSzQAAEtLdAAHy0u0C8wGgPQMQutAQAAANAyC60jAAAA0DMarQDQNDAaA9AxC60CAAAA0DILrQYAAADQMxqtANA1Gq0A0DYarQA=</v>
+          </d>
+        </o>
+        <v>{8A0FB252-96EB-4DCC-A5B4-B4804D05E2D6}</v>
+        <o>
+          <v n="Name">"{8A0FB252-96EB-4DCC-A5B4-B4804D05E2D6}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>WriteLineIDs</v>
+            <v>False</v>
+          </d>
+        </o>
+        <v>{8F99A816-E488-41E4-9FA3-846536012284}</v>
+        <o>
+          <v n="Name">"{8F99A816-E488-41E4-9FA3-846536012284}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="String">
+            <v>DisabledWarningIds</v>
+            <v>410,5410</v>
+          </d>
+        </o>
+        <v>{F66C7017-BDD8-4114-926C-81D6D687E35F}</v>
+        <o>
+          <v n="Name">"{F66C7017-BDD8-4114-926C-81D6D687E35F}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>CalcActiveTransOnly</v>
+            <v>True</v>
+          </d>
+        </o>
+      </d>
+      <d n="Values" t="Hashtable" />
+    </o>
+        </Data>
+        <TypeList>
+          <Type n="Boolean">System.Boolean</Type>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+          <Type n="String">System.String</Type>
+        </TypeList>
+      </XmlArchive>
+    </PlcProjectOptions>
+  </ProjectExtensions>
+</Project>

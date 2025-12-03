@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_SwivelMovement" Id="{0348cc1a-8e52-4042-b348-bde316debd0b}">
+    <Declaration><![CDATA[INTERFACE I_SwivelMovement
+]]></Declaration>
+    <Property Name="P_Return" Id="{b390e548-9456-494e-b0b1-f20dfb920fb2}">
+      <Declaration><![CDATA[PROPERTY P_Return : REFERENCE to ST_CommandReturn]]></Declaration>
+      <Get Name="Get" Id="{1c14d077-8833-4af0-9d58-469e61364fd8}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="StartMovement" Id="{391f8881-769c-4447-a6ea-0d644f348673}">
+      <Declaration><![CDATA[METHOD StartMovement
+VAR_INPUT
+	NumCycles		: UINT;
+	Velo			: LREAL;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

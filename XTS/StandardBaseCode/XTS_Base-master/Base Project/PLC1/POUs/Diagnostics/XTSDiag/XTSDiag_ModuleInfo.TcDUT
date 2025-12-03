@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <DUT Name="XTSDiag_ModuleInfo" Id="{07b9fd0b-a697-0350-2dcf-22d196f3c209}">
+    <Declaration><![CDATA[TYPE XTSDiag_ModuleInfo :
+STRUCT
+	DCLinkVoltage				: ARRAY[1..GVL_XTSDiag.MAX_NUM_MODULES] OF REAL;
+	OverallCurrent				: ARRAY[1..GVL_XTSDiag.MAX_NUM_MODULES] OF REAL;
+	MaxOverallCurrentLast500ms	: ARRAY[1..GVL_XTSDiag.MAX_NUM_MODULES] OF REAL;
+	PCBTemperatures				: ARRAY[1..GVL_XTSDiag.MAX_NUM_MODULES] OF ARRAY[1..4] OF REAL;
+	I2TTemperaturesPct			: ARRAY[1..GVL_XTSDiag.MAX_NUM_MODULES] OF ARRAY[1..15] OF USINT;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

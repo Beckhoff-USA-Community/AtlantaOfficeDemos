@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="FB_BounceStation" Id="{7f74bc91-bb45-4e3f-96ca-12b6692028f4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BounceStation EXTENDS FB_XPlanarStationBase
+VAR
+	_StationAngle  : LREAL;
+	ProcessState	: INT;
+	ProcessStateOld	: INT;
+	TON_StateChange	: TON := (PT := T#100MS);
+	CommandResultDone	: BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Execute" Id="{912e8c49-eef5-4d60-b3f4-cd091b11ea4a}">
+      <Declaration><![CDATA[METHOD Execute
+VAR_INST
+	i			  : UDINT := 1;
+	CommandResult : I_PlanarTaskResult;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.Execute();
+IF StationState = E_XPlanarStationState.ProcessMover THEN
+	CASE ProcessState OF
+
+		0:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(3.0);
+			ProcessState		:= 1;
+
+		1:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 2;
+			END_IF
+
+		2:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(1.0);
+			ProcessState 		:= 3;
+
+		3:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 4;
+			END_IF
+			
+		4:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(4.0);
+			ProcessState 		:= 5;
+
+		5:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 6;
+			END_IF
+			
+		6:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(1.0);
+			ProcessState		:= 7;
+
+		7:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 8;
+			END_IF
+			
+		8:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(5.0);
+			ProcessState 		:= 9;
+
+		9:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState	:= 10;
+			END_IF
+			
+		10:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(1.0);
+			ProcessState 		:= 11;
+
+		11:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 12;
+			END_IF
+			
+		12:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(6.0);
+			ProcessState 		:= 13;
+
+		13:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 14;
+			END_IF
+
+		14:	// Move Z
+			CommandResult		:= ipCurrentMover.MoveCommand.VerticalMove(2.0);
+			ProcessState 		:= 15;
+
+		15:	// Check for Result
+			IF CommandResult.Done AND TON_StateChange.Q THEN
+				ProcessState 	:= 16;
+			END_IF
+
+		16:	// Done
+			_StationComplete 	:= TRUE;
+
+	END_CASE
+
+	// Timer Call
+	TON_StateChange(IN := ProcessState = ProcessStateOld);
+
+ELSE
+	ProcessState	:= 0;
+	TON_StateChange(IN := FALSE);
+
+END_IF
+
+// Save Prevoius Values
+ProcessStateOld	:= ProcessState;
+
+// Debug
+IF CommandResult <> 0 THEN
+	CommandResultDone	:= CommandResult.Done;
+ELSE
+	CommandResultDone	:= FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="StationAngle" Id="{96ffc844-1e78-4117-b909-d82e25a357fa}">
+      <Declaration><![CDATA[PROPERTY StationAngle : LREAL]]></Declaration>
+      <Set Name="Set" Id="{cbf5d728-a066-4376-ab0c-34d5a20fecb4}">
+        <Declaration><![CDATA[VAR
+END_VAR]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_StationAngle := StationAngle;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_BounceStation">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BounceStation.Execute">
+      <LineId Id="23" Count="1" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="191" Count="0" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="87" Count="1" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="192" Count="0" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="50" Count="1" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="58" Count="2" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="179" Count="0" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="62" Count="2" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="66" Count="2" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="90" Count="2" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="164" Count="1" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="166" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_BounceStation.StationAngle.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

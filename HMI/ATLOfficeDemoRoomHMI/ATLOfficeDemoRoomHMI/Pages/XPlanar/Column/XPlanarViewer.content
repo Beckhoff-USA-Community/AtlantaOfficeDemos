@@ -1,0 +1,68 @@
+<div id="XPlanarViewer_1" data-tchmi-type="TcHmi.Controls.System.TcHmiContent" data-tchmi-top="0" data-tchmi-left="0" data-tchmi-width="100" data-tchmi-height="640" data-tchmi-width-unit="%">
+
+<div id="XPlanarView_1" data-tchmi-type="TcHmi.Controls.XPlanarView.XPlanarView" data-tchmi-height="90" data-tchmi-height-unit="%" data-tchmi-left="17.4" data-tchmi-left-unit="%" data-tchmi-top="34" data-tchmi-top-unit="px" data-tchmi-width="100" data-tchmi-width-unit="%" data-tchmi-mover-info="%s%ADS.XPlanar.XPlanarHMI.MoverObjects%/s%" data-tchmi-mover-vector-data="%s%ADS.XPlanar.XPlanarHMI.MoverPositions%/s%" data-tchmi-tile-config="%s%ADS.XPlanar.XPlanarHMI.TileObjects%/s%" data-tchmi-rotate="True" data-tchmi-display-mover-btn="False">
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "%ctx%owner::Id|EventRegistrationMode=Resolve%/ctx%.onSelectedMoverChanged",
+    "actions": [
+      {
+        "objectType": "Condition",
+        "active": true,
+        "parts": [
+          {
+            "if": [
+              {
+                "compare1": {
+                  "objectType": "Symbol",
+                  "valueType": "tchmi:general#/definitions/Number",
+                  "symbolExpression": "%ctx%owner::SelectedMoverIndex%/ctx%"
+                },
+                "compare2": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:general#/definitions/Number",
+                  "value": null
+                },
+                "compareOperator": "!=",
+                "logic": null
+              }
+            ],
+            "then": [
+              {
+                "objectType": "ControlApiFunction",
+                "active": true,
+                "control": "XPlanarPopup",
+                "fn": "open",
+                "asyncWait": true
+              }
+            ]
+          },
+          {
+            "else": [
+              {
+                "objectType": "ControlApiFunction",
+                "active": true,
+                "control": "XPlanarPopup",
+                "fn": "close",
+                "asyncWait": true
+              }
+            ]
+          }
+        ],
+        "asyncWait": true
+      }
+    ]
+  }
+]
+</script>
+</div>
+<div id="XPlanarPopup" data-tchmi-type="TcHmi.Controls.System.TcHmiPopup" data-tchmi-height="500" data-tchmi-height-unit="px" data-tchmi-left="24" data-tchmi-left-unit="px" data-tchmi-top="34" data-tchmi-top-unit="px" data-tchmi-width="500" data-tchmi-width-unit="px">
+
+<script data-tchmi-target-attribute="data-tchmi-target-file" type="application/json">
+{
+  "path": "UserControls/XPlanarPopup.usercontrol"
+}
+</script>
+</div>
+</div>

@@ -1,0 +1,29 @@
+{
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.14.3.154/runtimes/native1.12-tchmi/Schema/LocalizationDescription.Schema.json",
+  "locale": "en",
+  "localizedText": {
+    "L_Language": "Language",
+    "L_German": "German",
+    "L_English": "English",
+    "L_LanguageSelection": "Language Selection",
+    "L_CloseText": "Close",
+    "L_Main": "Main",
+    "L_XPlanarViewer": "XPlanar Viewer",
+    "L_EthercatDiagnostics1": "Ethercat Diagnostics1",
+    "L_Column": "Column",
+    "L_XPlanar": "XPlanar",
+    "L_XTSViewer": "XTS Viewer",
+    "L_EthercatDiagnostics": "Ethercat Diagnostics",
+    "L_Column1": "Column1",
+    "L_XTS": "XTS",
+    "L_Control_1": "Control_1",
+    "L_Control_2": "Control_2",
+    "L_EthercatDiagnostics2": "Ethercat Diagnostics2",
+    "L_NCAxis": "NC Axis",
+    "L_Column2": "Column2",
+    "L_AdvancedMotion": "Advanced Motion",
+    "L_Localization": "Localization",
+    "L_Theme": "Theme",
+    "L_Settings": "Settings"
+  }
+}

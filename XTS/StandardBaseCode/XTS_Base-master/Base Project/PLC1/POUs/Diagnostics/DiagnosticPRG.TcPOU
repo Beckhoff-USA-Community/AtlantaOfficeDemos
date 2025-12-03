@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.12">
+  <POU Name="DiagnosticPRG" Id="{3d5c94cf-cc4b-0be9-3b4c-ae330cd0c829}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM DiagnosticPRG
+VAR
+
+	// Helpful note: issues with this configuration can throw errors that overload the ADS messages. 
+	// It's good to set this task to 1ms cycle time, get it working, then set it to higher speed (2ms, 10ms, etc)
+	StartFileStream			: BOOL;
+	StopFileStream			: BOOL;
+	FileStreamRunning		: BOOL;
+
+	FileStreamController	: FB_ALYC_FileStream;
+
+
+
+	// Note Generic Constants in XTSDiagnostic Declaration
+	// <Num Movers, Num Modules, Num Infeeds>.  Get this information from XPU structure.  Clothoids count as 2 modules.
+	XTSDiagnostic	: FB_XTSDiagnostic <10,12,2>;
+	(*
+	{IF defined(Product_Selector) OR defined(Product_Selector_Sim)}
+	XTSDiagnostic	: ARRAY[0..GVL.NUM_XPU - 1] OF FB_XTSDiagnostic <32,14,4>;
+	{ELSIF defined(Bottom_Transport) OR defined(Bottom_Transport_Sim)}
+	XTSDiagnostic	: ARRAY[0..GVL.NUM_XPU - 1] OF FB_XTSDiagnostic <26,22,6>;
+	{ELSIF defined(Side_Transport) OR defined(Side_Transport_Sim)}
+	XTSDiagnostic	: ARRAY[0..GVL.NUM_XPU - 1] OF FB_XTSDiagnostic <38,34,6>;
+	{ELSIF defined(EPGS) OR defined(EPGS_Sim)}
+	XTSDiagnostic	: ARRAY[0..GVL.NUM_XPU - 1] OF FB_XTSDiagnostic <50,58,13>;
+	{END_IF}
+	*)
+
+	Init			: BOOL;
+	i				: INT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT Init THEN
+	Action_InitDiag();
+	Init	:= TRUE;
+END_IF
+
+// Tc Analytics File Stream Control
+IF StartFileStream THEN
+	FileStreamController.Start();
+	StartFileStream		:= FALSE;
+ELSIF StopFileStream THEN
+	FileStreamController.Stop();
+	StopFileStream		:= FALSE;
+END_IF
+FileStreamRunning		:= FileStreamController.bStarted;
+
+// XTS Diagnostics
+XTSDiagnostic.Cyclic();]]></ST>
+    </Implementation>
+    <Action Name="Action_InitDiag" Id="{b5306772-5022-045a-1e3d-f62bc7fb7467}">
+      <Implementation>
+        <ST><![CDATA[XTSDiagnostic.PowerSupplyCount	:= 2;
+XTSDiagnostic.rXTS				REF= MAIN.XTS;
+
+// ********************		SYSTEM 1		******************** //
+i := 1;
+// Infeed 1
+XTSDiagnostic.SetModuleInfeedMapping(i, 1, 1);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 1, 2);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 1, 3);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 1, 4);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 1, 5);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 1, 6);		i := i + 1;
+
+// Infeed 2
+XTSDiagnostic.SetModuleInfeedMapping(i, 2, 1);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 2, 2);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 2, 3);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 2, 4);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 2, 5);		i := i + 1;
+XTSDiagnostic.SetModuleInfeedMapping(i, 2, 6);		i := i + 1;]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="DiagnosticPRG">
+      <LineId Id="1" Count="16" />
+    </LineIds>
+    <LineIds Name="DiagnosticPRG.Action_InitDiag">
+      <LineId Id="1" Count="19" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

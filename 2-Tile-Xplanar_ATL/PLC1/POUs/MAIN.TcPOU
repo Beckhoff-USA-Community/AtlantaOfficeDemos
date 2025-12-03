@@ -1,0 +1,947 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="MAIN" Id="{7d4ff9b1-a8bc-4250-9226-bef726560f62}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	// button
+	IbStart			AT%i*	: BOOL;
+	IbStop			AT%I*	: BOOL;
+	IbSwitch				: BOOL;
+	IbSwitchRestart	AT%I*	: BOOL;
+	IbEstop1		AT%I*	: BOOL;
+	IbEstop2  		AT%I*	: BOOL;
+	bEstopPressed			: BOOL;
+	bSwitchCycledOff		: BOOL := 1;
+	
+	HMI_EStop				: BOOL	:= TRUE;
+	HMI_Run					: BOOL;
+	HMI_Restart				: BOOL;
+	
+	ObLamp			AT%Q*	: BOOL;	
+	fbBlinker				: FB_Blinker;
+	tcRestart 				: TC_Restart;
+
+	nState 					: INT;
+	mover					: ARRAY[1..2] OF FB_MoverApplication;
+	ipMover					: ARRAY[1..2] OF I_MoverApplication;
+	_ipMover				: ARRAY[1..2] OF I_MoverApplication;	
+	cmdFb					: MC_PlanarFeedback;
+	TargetPos				: PositionXYC;
+	StartPos				: ARRAY[1..2] OF PositionXYC;
+	Track8					: FB_TrackStandard;
+	nStateTrackInit 		: INT;
+	pstart					: REFERENCE TO PositionXYC;
+	pend					: REFERENCE TO PositionXYC;
+	pposition				: REFERENCE TO PositionXYC;
+	start					: PositionXYC;
+	end						: PositionXYC;
+	position				: PositionXYC;
+	
+	
+	
+	// pattern Eight
+	
+	fSpeedEight 			: LREAL := 750;
+	nCntEights				: INT;
+	
+	// Pattern Print
+	nCnt					: INT;
+	nStateP_Print			: INT;
+	fYPos					: LREAL;
+	
+	// Pattern Rotation
+	fCTargetPos				: LREAL;
+	fRotCnt					: INT := 0;
+	stMoveCOptions			: ST_MoveCOptions;
+	stMoveCOptions2			: ST_MoveCOptions;
+	nStateP_Rotation		: INT;
+	
+	// EIGHT
+	StartPosEight			: ARRAY[1..2] OF PositionXYC;
+	nStateP_Eight			: INT;
+	
+	// Pattern tilt
+	nStateP_Tilt			: INT;
+	
+	
+	// log
+	fbWriteLog				: FB_WriteLog;
+	tonTimer				: TON;
+	nStateLog				: INT;
+	stDiagData				: ST_CoeDriveDiagData;
+	TilePower 				: UINT;
+	nTemp1 					: UINT;
+	nTemp2 					: UINT;
+	nTemp3 					: UINT;
+	nTemp4 					: UINT;
+	nTemp5 					: UINT;
+	//utility
+	fbEnvironment			: FB_TcIoXPlanarEnvironment;
+	ipXpu					: I_TcIoXPlanarProcessingUnit;
+	fbXPlanarUtilityVisu	: FB_XPlanarUtilityVisu;
+	nStateInitXpu			: INT;
+	
+	
+	fPosX					: LREAL;
+	fPosY					: LREAL;
+	_Position				: PositionXYC;
+	fTrackPos				: LREAL;
+	fTrackLength			: LREAL;
+	
+	//shutdown
+	fbDelay					:TON;	
+	fbShutdown				:NT_SHUTDOWN;
+	tDelay					:TIME := T#3000MS;
+	bStartShutdown			:BOOL;
+
+	// Pushbuttons
+	Init			: BOOL;
+	i				: INT;
+	TON_LEDFlash	: TON;
+	PushButton		: ARRAY[0..3] OF FB_Pushbutton;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Cope additions to controls with HMI
+//IbEstop1			:= IbEstop2		:= HMI_EStop;
+//IbStart			:= IbSwitch		:= HMI_Run;
+//IbSwitchRestart						:= HMI_Restart;
+
+// Cope additions to controls with Pushbuttons
+PushButtonAdmin();
+IbStart				:= IbSwitch		:= HMI_Run;
+IbSwitchRestart		:= HMI_Restart;
+
+mover[1].Cycle();
+mover[2].Cycle();
+
+// start/stop latching
+IbSwitch := (IbSwitch OR IbStart) AND NOT IbStop;
+
+bEstopPressed := Pushbutton[PB_EStop].Pressed;
+bSwitchCycledOff := (bEstopPressed AND NOT ibSwitch) OR (bSwitchCycledOff AND nstate < 1);
+
+IF nstate > 0 AND nstate < 100 AND bEstopPressed THEN
+	nstate := -10;
+END_IF
+
+fbBlinker(
+	bStart 			:= (nstate > 10),
+	tTurnOffDelay 	:= T#750MS,
+	tTurnOnDelay	:= T#750MS,
+	bLed			=> ObLamp);
+
+actShutdown();
+
+tcRestart(
+	NETID:= , 
+	RESTART:= IbSwitchRestart AND NOT bStartShutdown, 
+	TMOUT:= , 
+	BUSY=> , 
+	ERR=> , 
+	ERRID=> );
+
+CASE nstate OF
+	
+-10:
+	mover[1].std.Disable('');
+	mover[2].std.Disable('');
+	nstate := -9;	
+	
+-9:
+	IF IbSwitch AND bswitchCycledoff AND NOT bEstopPressed THEN
+		nstate := 0;
+	END_IF	
+
+-2:
+	mover[1].std.Reset('');
+	mover[2].std.Reset('');
+	nstate := -1;
+-1:
+	IF 	mover[1].std.P_Reset.Done
+		AND mover[2].std.P_Reset.Done  THEN
+		//nstate := 0;
+	END_IF
+
+0:
+	IF IbSwitch AND bswitchCycledoff AND NOT bEstopPressed THEN
+		nstate := 1;
+	END_IF
+1:
+	mover[1].std.Enable('');
+	mover[2].std.Enable('');
+	nstate := 2;
+2:
+	IF mover[1].std.P_Enable.Done
+		AND mover[2].std.P_Enable.Done THEN
+		nstate := 5;
+	END_IF
+
+
+5:
+	IF mover[1].std.P_ActPosition.y < mover[2].std.P_ActPosition.y THEN
+		ipMover[1] := mover[1];	
+		ipMover[2] := mover[2];	
+	ELSE
+		ipMover[1] := mover[2];	
+		ipMover[2] := mover[1];	
+	END_IF
+	nstate := 10;
+	
+10:
+	StartPos[1].SetValuesXYC(120,120,0);
+	StartPos[2].SetValuesXYC(120,360,0);
+	nstate := 12;
+	
+	
+12:
+
+		nstate := 13;
+
+13:
+	Mover[1].std.MoveZ('',2.0,10,1000,1000,1000);
+	Mover[2].std.MoveZ('',4.0,100,1000,1000,1000);
+	nState := 14;
+14:
+	IF ipMover[1].std.P_MoveZ.Done 
+		AND  ipMover[2].std.P_MoveZ.Done THEN
+		nstate := 15;
+	END_IF		
+	
+	
+15:
+	ipMover[1].std.MoveToPosition('',startpos[1],2000,20000,20000,2000000);
+	ipMover[2].std.MoveToPosition('',startpos[2],2000,20000,20000,2000000);	
+
+	nstate := 16;
+
+16:
+//	   Mover[1].Swivel.StartMovement(5,250);
+//	   Mover[2].Swivel.StartMovement(5,250);
+	   nstate := 17;
+	 
+17:
+//		IF	  mover[1].Swivel.P_Return.Done 
+//			AND mover[2].Swivel.P_Return.Done THEN
+			
+		
+			Mover[2].std.MoveZ('',2.0,100,1000,1000,1000);
+	 		nstate := 20;
+//	 END_IF
+
+
+20:
+	IF ipMover[1].std.P_MoveToPosition.Done 
+		AND ipMover[2].std.P_MoveToPosition.Done THEN
+		nStateP_Eight := 1;
+		nstate := 21;
+	END_IF		
+
+21:
+	IF 	nStateP_Eight = 0 THEN
+		nstate := 30;
+	END_IF
+	
+30:
+	nStateP_Rotation := 1;
+	nstate := 31;
+31:
+	IF 	nStateP_Rotation = 0 THEN
+		nstate := 40;
+	END_IF
+	
+	
+40:
+
+	nStateP_Tilt := 1;
+	nstate := 41;
+	
+41:
+	IF nStateP_Tilt = 0 THEN
+		nstate := 100;
+	END_IF
+
+	
+
+
+
+
+
+100:
+IF IbSwitch THEN
+	nstate := 15;
+ELSE
+	nstate :=  -10;
+	bSwitchCycledOff := true;
+END_IF
+	
+
+	
+END_CASE
+	// Eight
+	CASE 	nStateP_Eight OF
+		
+	1:
+		StartPosEight[1].SetValuesXYC(60,60,0);
+		StartPosEight[2].SetValuesXYC(180,180,0);
+		nStateP_Eight := 2;
+	2:
+		ipMover[1].std.MoveToPosition('',StartPosEight[1],2000,20000,20000,2000000);
+		ipMover[2].std.MoveToPosition('',StartPosEight[2],2000,20000,20000,2000000);	
+	
+		nStateP_Eight := 3;
+	3:
+		IF ipMover[1].std.P_MoveToPosition.Done 	
+			AND ipMover[2].std.P_MoveToPosition.Done THEN
+			nStateP_Eight := 10;
+		END_IF		
+		
+		
+	10:
+		nCntEights := 0;
+		ipMover[1].std.JoinTrack('',track8,1000,3000,10000,0);
+		ipMover[2].std.JoinTrack('',track8,1000,3000,10000,0);
+		nStateP_Eight := 12;
+	
+	12:
+		IF ipMover[1].std.P_JoinTrack.Done 
+			AND ipMover[2].std.P_JoinTrack.Done THEN
+			nStateP_Eight := 13;
+		END_IF
+		
+	13:
+		 ipMover[1].std.MoveOnTrack('',track8,864 +(5*fTrackLength),fSpeedEight,5000,500000,30,tc3_mc3planarmotion.MC_Direction.mcDirectionNonModulo);
+		 ipMover[2].std.MoveOnTrack('',track8,651+(5*fTrackLength),fSpeedEight,5000,500000,30,tc3_mc3planarmotion.MC_Direction.mcDirectionNonModulo);
+		nStateP_Eight := 14;
+		
+
+		14:
+		IF ipMover[1].std.P_MoveOnTrack.Done 	
+			AND ipMover[2].std.P_MoveOnTrack.Done THEN
+			nStateP_Eight := 20;
+		END_IF		
+		
+		20:
+		ipMover[1].std.LeaveTrack('',StartPosEight[1],1000,5000,5000,50000,0);
+		ipMover[2].std.LeaveTrack('',StartPosEight[2],1000,5000,5000,50000,0);	
+		nStateP_Eight := 21;
+	
+		21:
+		IF ipMover[1].std.P_LeaveTrack.Done 
+			AND ipMover[2].std.P_LeaveTrack.Done  THEN
+			nStateP_Eight := 30;
+		END_IF
+		
+		
+		
+		
+	30:
+		StartPosEight[1].SetValuesXYC(60,480-60,0);
+		StartPosEight[2].SetValuesXYC(180,60,0);
+
+		nStateP_Eight := 31;
+	31:
+		ipMover[1].std.MoveToPosition('',StartPosEight[1],2000,20000,20000,2000000);
+		ipMover[2].std.MoveToPosition('',StartPosEight[2],2000,20000,20000,2000000);	
+	
+		nStateP_Eight := 32;
+	32:
+		IF ipMover[1].std.P_MoveToPosition.Done 	
+			AND ipMover[2].std.P_MoveToPosition.Done THEN
+			nStateP_Eight := 35;
+		END_IF		
+		
+
+	35:	
+		StartPosEight[1].SetValuesXYC(60,60,0);
+		StartPosEight[2].SetValuesXYC(180,480-60,0);
+
+		nStateP_Eight := 36;
+	36:
+		ipMover[1].std.MoveToPosition('',StartPosEight[1],2000,20000,20000,2000000);
+		ipMover[2].std.MoveToPosition('',StartPosEight[2],2000,20000,20000,2000000);	
+	
+		nStateP_Eight := 37;
+	37:
+		IF ipMover[1].std.P_MoveToPosition.Done 	
+			AND ipMover[2].std.P_MoveToPosition.Done THEN
+			
+			nCntEights := nCntEights +1;
+			nStateP_Eight := 40;
+		END_IF	
+	40:
+		IF nCntEights >= 5 THEN
+			nStateP_Eight := 50;
+		ELSE
+			nStateP_Eight := 30;
+		END_IF
+
+	50:
+		StartPosEight[1].SetValuesXYC(180,60,0);
+		StartPosEight[2].SetValuesXYC(60,480-60,0);
+		ipMover[1].std.MoveToPosition('',StartPosEight[1],2000,20000,20000,2000000);
+		ipMover[2].std.MoveToPosition('',StartPosEight[2],2000,20000,20000,2000000);	
+	
+		nStateP_Eight := 51;
+	51:
+		IF ipMover[1].std.P_MoveToPosition.Done 	
+			AND ipMover[2].std.P_MoveToPosition.Done THEN
+					nStateP_Eight := 52;
+		END_IF
+			
+			
+	52:
+		_ipMover[1] := ipMover[1];
+		_ipMover[2] := ipMover[2];
+		
+		ipMover[1] := _ipMover[2];
+		ipMover[2] := _ipMover[1];
+
+		nStateP_Eight := 55;
+
+	55:
+		IF nCntEights >= 10 THEN
+			nStateP_Eight := 60;
+		ELSE
+			nStateP_Eight := 30;
+		END_IF
+
+	60:
+		_ipMover[1] := ipMover[1];
+		_ipMover[2] := ipMover[2];
+		
+		ipMover[1] := _ipMover[2];
+		ipMover[2] := _ipMover[1];
+
+		nStateP_Eight := 90;
+
+	90:
+	
+		ipMover[1].std.MoveToPosition('',startpos[1],2000,20000,20000,2000000);
+		ipMover[2].std.MoveToPosition('',startpos[2],2000,20000,20000,2000000);	
+	
+		nStateP_Eight := 91;
+	91:
+		IF ipMover[1].std.P_MoveToPosition.Done 
+			AND ipMover[2].std.P_MoveToPosition.Done THEN
+			nStateP_Eight := 0;
+		END_IF	
+	END_CASE
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// ROTATION
+	CASE 	nStateP_Rotation OF
+		
+	1:
+	
+		StartPos[1].SetValuesXYC(120,120,0);
+		StartPos[2].SetValuesXYC(120,360,0);
+		fCTargetPos := 10;
+		ipmover[1].std.MoveToPosition('',startpos[1],2000,20000,20000,2000000);
+		ipmover[2].std.MoveToPosition('',startpos[2],2000,20000,20000,2000000);
+		nStateP_Rotation := 2;
+	2:
+		IF ipmover[1].std.P_MoveToPosition.Done
+			AND ipmover[2].std.P_MoveToPosition.Done THEN
+			nStateP_Rotation := 10;
+		END_IF
+	10:
+		stMoveCOptions.additionalTurns := 0;
+		stMoveCOptions.direction := tc3_mc3planarmotion.MC_Direction.mcDirectionNegative;
+		ipmover[1].std.MoveC('',360-fCTargetPos,360*(fCTargetPos/5),500,500,1000,stMoveCOptions);
+		stMoveCOptions2.additionalTurns := 0;
+		stMoveCOptions2.direction := tc3_mc3planarmotion.MC_Direction.mcDirectionPositive;
+		ipmover[2].std.MoveC('',fCTargetPos,360*(fCTargetPos/5),500,500,1000,stMoveCOptions2);
+		nStateP_Rotation := 11;
+	11:
+		IF ipmover[1].std.P_MoveC.Done 
+			AND ipmover[2].std.P_MoveC.Done THEN
+		
+				nStateP_Rotation := 15;
+			END_IF
+
+	15:
+		stMoveCOptions.additionalTurns := 0;
+		stMoveCOptions.direction := tc3_mc3planarmotion.MC_Direction.mcDirectionPositive;
+		ipmover[1].std.MoveC('',fCTargetPos,360*(fCTargetPos/5),500,500,1000,stMoveCOptions);
+		stMoveCOptions2.additionalTurns := 0;
+		stMoveCOptions2.direction := tc3_mc3planarmotion.MC_Direction.mcDirectionNegative;		
+		ipmover[2].std.MoveC('',360-fCTargetPos,360*(fCTargetPos/5),500,500,1000,stMoveCOptions2);
+		nStateP_Rotation := 16;
+	16:
+		IF ipmover[1].std.P_MoveC.Done THEN
+				fCTargetPos := fCTargetPos + 30;
+				nStateP_Rotation := 20;
+		END_IF
+
+		IF 	fCTargetPos >= 160 THEN
+			nStateP_Rotation := 30;
+		END_IF
+
+	20:
+		IF 	fCTargetPos > 180 THEN
+			nStateP_Rotation := 30;
+		ELSE
+			nStateP_Rotation := 10;
+		END_IF
+		
+		
+	30:
+		stMoveCOptions.additionalTurns := 30;
+		stMoveCOptions2.additionalTurns := 30;
+		stMoveCOptions.direction := tc3_mc3planarmotion.MC_Direction.mcDirectionNegative;
+		stMoveCOptions2.direction := tc3_mc3planarmotion.MC_Direction.mcDirectionPositive;
+		ipmover[1].std.MoveC('',0,8*360,1000,100000,100000,stMoveCOptions);
+		ipmover[2].std.MoveC('',0,8*360,1000,100000,100000,stMoveCOptions2);
+		nStateP_Rotation := 31;
+		
+	31:
+			IF ipmover[1].std.P_MoveC.Done
+				AND ipmover[1].std.P_MoveC.Done THEN
+				
+				nStateP_Rotation := 0;
+			END_IF	
+			
+		
+	END_CASE
+
+(*
+	// PRINTER
+	CASE nStateP_Print OF	
+		
+	0:
+	
+	1:
+		nStateP_Print := 10;
+		fYPos := 0;
+	10:
+		TargetPos.SetValuesXYC(60,60+fYPos,0);
+		mover[1].std.MoveToPosition('',targetpos,2000,20000,20000,2000000);
+		nStateP_Print := 11;
+	
+		
+	11:	
+		IF mover[1].std.P_MoveToPosition.Done THEN
+			nStateP_Print := 12;
+		END_IF
+		
+	12:
+		TargetPos.SetValuesXYC(420,60+fYPos,0);
+		mover[1].std.MoveToPosition('',targetpos,2000,20000,20000,2000000);
+		nStateP_Print := 13;
+	
+		
+	13:	
+		IF mover[1].std.P_MoveToPosition.Done THEN
+			fYPos := fYPos+1;
+			nStateP_Print := 14;
+		END_IF	
+		
+	14:
+		TargetPos.SetValuesXYC(420,60+fYPos,0);
+		mover[1].std.MoveToPosition('',targetpos,2000,20000,20000,2000000);
+		nStateP_Print := 15;
+	15:
+		IF mover[1].std.P_MoveToPosition.Done THEN
+			fYPos := fYPos+5;
+			nStateP_Print := 16;
+		END_IF		
+	16:
+		IF fYPos > 120 THEN
+			nStateP_Print := 20;
+		ELSE
+			nStateP_Print := 10;
+		END_IF
+	20:
+		mover[1].std.MoveToPosition('',startpos[1],2000,20000,20000,2000000);
+		nStateP_Print := 21;
+	21:
+		IF mover[1].std.P_MoveToPosition.Done THEN
+			nStateP_Print := 0;
+		END_IF
+	
+	END_CASE	
+
+*)
+	
+	
+	
+CASE nStateP_Tilt	OF
+	
+
+
+1:
+	ipMover[1].std.MoveZ('',5.0,1000,2000,2000,20000);
+	ipMover[2].std.MoveZ('',5.0,1000,2000,2000,20000);
+	nStateP_Tilt := 2;
+
+2:	
+	IF ipMover[1].std.P_MoveZ.Done 
+			AND ipMover[2].std.P_MoveZ.Done THEN
+			nStateP_Tilt := 5;
+	END_IF	
+	
+	
+5:
+	ipMover[1].std.Movea('',2.5,1000,2000,2000,20000);
+	ipMover[2].std.Movea('',-2.5,1000,2000,2000,20000);
+	nStateP_Tilt := 6;
+
+6: 
+	IF ipMover[1].std.P_Movea.Done 
+			AND ipMover[2].std.P_Movea.Done THEN
+			nStateP_Tilt := 10;
+	END_IF		
+10:
+	ipMover[1].std.Movea('',-2,1000,2000,2000,20000);
+	ipMover[2].std.Movea('',2,1000,2000,2000,20000);
+	
+	ipMover[1].std.Moveb('',2,1000,2000,2000,20000);
+	ipMover[2].std.Moveb('',-2,1000,2000,2000,20000);
+	nStateP_Tilt := 11;
+
+11:
+	IF ipMover[1].std.P_Movea.Done 
+			AND ipMover[2].std.P_Movea.Done THEN
+			nStateP_Tilt := 15;
+	END_IF	
+15:
+	//ipMover[1].std.Movea('',3,1000,2000,2000,20000);
+	//ipMover[2].std.Movea('',-3,1000,2000,2000,20000);
+	
+	ipMover[1].std.Moveb('',-2,1000,2000,2000,20000);
+	ipMover[2].std.Moveb('',2,1000,2000,2000,20000);
+	
+	nStateP_Tilt := 20;	
+20:	
+	IF ipMover[1].std.P_Moveb.Done 
+			AND ipMover[2].std.P_Moveb.Done THEN
+			nStateP_Tilt := 25;
+	END_IF	
+
+25:	
+	ipMover[1].std.Movea('',0,1000,2000,2000,20000);
+	ipMover[2].std.Movea('',0,1000,2000,2000,20000);
+	nStateP_Tilt := 26;
+26:
+	IF ipMover[1].std.P_Movea.Done 
+			AND ipMover[2].std.P_Movea.Done THEN
+			nStateP_Tilt := 27;
+	END_IF
+
+27:
+	ipMover[1].std.Moveb('',0,1000,2000,2000,20000);
+	ipMover[2].std.Moveb('',0,1000,2000,2000,20000);	
+
+	nStateP_Tilt := 28;
+	
+28:
+	IF ipMover[1].std.P_Moveb.Done 
+			AND ipMover[2].std.P_Moveb.Done THEN
+			nStateP_Tilt := 30;
+	END_IF
+
+	
+30:			
+	ipMover[1].std.MoveZ('',2.0,1000,2000,2000,20000);
+	ipMover[2].std.MoveZ('',2.0,1000,2000,2000,20000);		
+			nStateP_Tilt := nStateP_Tilt +1;
+
+31:
+	IF ipMover[1].std.P_MoveZ.Done 
+			AND ipMover[2].std.P_MoveZ.Done THEN
+			nStateP_Tilt := 0;
+	END_IF	
+	
+END_CASE
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+CASE nStateInitXpu OF
+0: // init environment
+		IF fbEnvironment.Init(TRUE) THEN
+			fbEnvironment.Init(FALSE);
+			nStateInitXpu:=1;
+		END_IF
+
+1: // init Visu
+	fbXPlanarUtilityVisu.Environment := fbEnvironment;
+	nStateInitXpu := 3;	
+
+3:
+	ipXpu := fbEnvironment.XpuTcIo(1);
+	nStateInitXpu := 4;
+	
+ELSE // call Visu
+	fbXPlanarUtilityVisu.Cycle();
+END_CASE
+
+IF nStateInitXpu <> 4 THEN
+RETURN;
+END_IF
+
+(*
+fbWriteLog(sPath:='c:\templog\log.txt' , bErrorAcknowledge:= );
+
+
+tonTimer(IN:= , PT:=T#60S , Q=> , ET=> );
+
+CASE nstatelog OF
+	
+0:
+tonTimer(IN:=TRUE);
+	IF tonTimer.Q THEN
+		nstatelog := 1;
+	END_IF
+
+1:
+IF ipXpu.TileCoE(1,1).DiagData.Update() THEN
+	TilePower := LREAL_TO_UINT(ipXpu.TileTcIo(1,1).GetObservedTilePower());
+	stDiagData.TemperatureCenter := ipXpu.TileCoE(1,1).DiagData.TemperatureCenter;
+	stDiagData.TemperatureNorth := ipXpu.TileCoE(1,1).DiagData.TemperatureNorth;
+	stDiagData.TemperatureEast := ipXpu.TileCoE(1,1).DiagData.TemperatureEast;
+	stDiagData.TemperatureSouth := ipXpu.TileCoE(1,1).DiagData.TemperatureSouth;
+	stDiagData.TemperatureWest := ipXpu.TileCoE(1,1).DiagData.TemperatureWest;
+	nstatelog := 0;
+	tonTimer(IN:=FALSE);
+	fbWriteLog.M_AddLogg(CONCAT(UINT_TO_STRING(stDiagData.TemperatureCenter),CONCAT(';',CONCAT(UINT_TO_STRING(stDiagData.TemperatureNorth),CONCAT(';',CONCAT(UINT_TO_STRING(stDiagData.TemperatureEast),CONCAT(';',CONCAT(UINT_TO_STRING(stDiagData.TemperatureSouth),CONCAT(';',CONCAT(UINT_TO_STRING(stDiagData.TemperatureWest),CONCAT(';',UINT_TO_STRING(TilePower))))))))))));
+
+
+END_IF
+
+END_CASE
+
+*)
+
+
+
+
+
+
+CASE nStateTrackInit OF
+	
+0:
+	track8.Reset();
+	
+	pstart REF= start;
+	pend REF= end;
+	pposition REF= position;
+	
+	nStateTrackInit := 1;
+1:
+	IF track8.P_Reset.done THEN
+		nStateTrackInit := 2;
+	END_IF
+2:
+	start.SetValuesXYC(120-20,240-1,0);
+	end.SetValuesXYC(120+20,240+1,0);
+	track8.AppendLine(start,end);
+
+	pposition.SetValuesXYC(180,300,0);
+//	track8.AppendPoint(pposition);
+	
+	// rechts oben
+	start.SetValuesXYC(240-60,360-1,0);
+	end.SetValuesXYC(240-60,360+20,0);	
+	track8.AppendLine(start,end);
+	
+	pposition.SetValuesXYC(420,420,0);
+//	track8.AppendPoint(pposition);
+
+	// rechts mitte
+	start.SetValuesXYC(120+1,480-60,0);
+	end.SetValuesXYC(120-1,480-60,0);	
+	track8.AppendLine(start,end);
+	
+	pposition.SetValuesXYC(60,420,0);
+//	track8.AppendPoint(pposition);
+	
+	// rechts unten
+	start.SetValuesXYC(60,360+20,0);
+	end.SetValuesXYC(60,360-1,0);	
+	track8.AppendLine(start,end);	
+	
+	pposition.SetValuesXYC(60,300,0);
+//	track8.AppendPoint(pposition);
+
+	// kreuz von rechts unten nach links oben
+	start.SetValuesXYC(120-20,240+1,0);
+	end.SetValuesXYC(120+20,240-1,0);
+	track8.AppendLine(start,end);	
+	
+//	pposition.SetValuesXYC(180,180,0);
+//	track8.AppendPoint(pposition);
+	
+	// links oben
+	start.SetValuesXYC(240-60,120+1,0);
+	end.SetValuesXYC(240-60,120-20,0);	
+	track8.AppendLine(start,end);
+
+	pposition.SetValuesXYC(180,60,0);
+//	track8.AppendPoint(pposition);
+	
+	// libks mitte
+	start.SetValuesXYC(120+1,60,0);
+	end.SetValuesXYC(120-1,60,0);	
+	track8.AppendLine(start,end);
+	
+	pposition.SetValuesXYC(60,60,0);
+//	track8.AppendPoint(pposition);
+	
+	//links unten
+	start.SetValuesXYC(60,120-20,0);
+	end.SetValuesXYC(60,120+1,0);	
+	track8.AppendLine(start,end);
+	
+	pposition.SetValuesXYC(60,180,0);
+//	track8.AppendPoint(pposition);
+
+	track8.CloseLoop();
+	nStateTrackInit := 3;
+3:
+	IF track8.P_CloseLoop.Done THEN
+		nStateTrackInit := 4;
+	END_IF
+4:
+	Track8.Enable();
+	nStateTrackInit := 5;
+5:
+	IF Track8.P_Enable.Done THEN
+		nStateTrackInit := 6;
+	END_IF
+END_CASE
+track8.Cycle();
+
+
+
+
+fTrackLength := track8.GetLength();
+
+track8.GetMoverPositionAt(fTrackPos,_Position);
+fPosX := _Position.x;
+fPosY := _Position.y;
+
+fTrackPos := fTrackPos +1;
+IF fTrackPos >= fTrackLength THEN
+	fTrackPos := 1;
+END_IF
+
+
+
+
+]]></ST>
+    </Implementation>
+    <Action Name="actShutdown" Id="{997d0fba-6457-419b-9a1d-cdf3d28cd5cf}">
+      <Implementation>
+        <ST><![CDATA[//act Shutdown
+
+	IF TwinCAT_SystemInfoVarList._TaskInfo[GETCURTASKINDEXEX()].FirstCycle
+		AND IbSwitchRestart
+	THEN
+		bStartShutdown	:= TRUE;
+	END_IF
+
+	fbDelay(
+		IN := IbSwitchRestart,
+		PT := tDelay);
+		
+	fbShutdown(
+		START := fbDelay.Q);	
+
+
+
+//End]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="PushButtonAdmin" Id="{0a238e71-1dc6-4b41-9e1d-aa94bf50d3a7}">
+      <Declaration><![CDATA[METHOD PushButtonAdmin : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Cope additions to controls with buttons
+IF NOT Init THEN
+	Init							:= TRUE;
+	TON_LEDFlash.PT					:= T#1S;
+	PushButton[PB_EStop].LED_Color	:= LED_Color_Enum.LED_RED;
+	PushButton[PB_Start].LED_Color	:= LED_Color_Enum.LED_GREEN;
+	PushButton[PB_Stop].LED_Color	:= LED_Color_Enum.LED_YELLOW;
+	PushButton[PB_Reset].LED_Color	:= LED_Color_Enum.LED_BLUE;
+	FOR i := 0 TO 3 DO PushButton[i].rTON_Flash	REF= TON_LEDFlash; END_FOR
+END_IF
+
+// Pushbutton 
+FOR i := 0 TO 3 DO
+	PushButton[i]();
+END_FOR
+
+TON_LEDFlash(IN := TRUE);
+IF TON_LEDFlash.Q THEN
+	TON_LEDFlash(IN := FALSE);
+END_IF
+
+// estop
+IF PushButton[PB_EStop].Pressed THEN
+	PushButton[PB_EStop].Flash();
+ELSE
+	PushButton[PB_EStop].Off();
+END_IF
+
+// Start
+
+// Stop
+
+// Reset]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Shutdown" Id="{6d9f8433-e2be-4756-8e24-430d85aab6f0}">
+      <Declaration><![CDATA[METHOD Shutdown : BOOL
+VAR_INPUT
+	bExecute		:BOOL;
+END_VAR
+VAR_INST
+
+
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// mShutdown
+
+
+
+
+//End]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

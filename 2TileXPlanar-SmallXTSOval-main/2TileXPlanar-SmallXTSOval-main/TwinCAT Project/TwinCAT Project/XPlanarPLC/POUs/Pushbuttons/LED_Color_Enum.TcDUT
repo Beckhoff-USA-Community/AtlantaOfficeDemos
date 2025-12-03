@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="LED_Color_Enum" Id="{b385528f-1095-45dd-9b51-002d366d8972}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'to_string'}
+TYPE LED_Color_Enum :
+(
+	LED_RED		:= 0,
+	LED_GREEN	:= 1,
+	LED_BLUE	:= 2,
+	LED_YELLOW	:= 3,
+	LED_WHITE	:= 4
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
